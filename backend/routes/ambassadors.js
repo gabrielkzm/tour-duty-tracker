@@ -4,39 +4,44 @@ let Ambassador = require('../models/ambassador.model');
 // GET/ ambassadors
 router.route('/').get((_, response) => {
     Ambassador.find()
-        .then(ambassadors => response.status(200).json(ambassadors))
-        .catch(error => response.status(400).json(`Error: ${error}`));
+        .then(ambassadors => response.status(200).json({
+            "code":"SUCCESS",
+            "ambssadors":ambassadors}))
+        .catch(error => response.status(400).json({
+            "code": "INALID_INPUT",
+            "message": `${error}`}));
 });
 
 // GET/ ambassadors/{id}
 router.route('/:id').get((request, response) => {
     Ambassador.findById(request.params.id)
-        .then(ambassador => response.status(200).json(ambassador))
-        .catch(error => response.status(400).json(`Error: ${error}`));
+        .then(ambassador => response.status(200).json({
+            "code":"SUCCESS",
+            "ambassador":ambassador}))
+        .catch(error => response.status(400).json({
+            "code": "INVALID_INPUT",
+            "message": `${error}`}));
 });
 
 // POST/ ambassadors
 router.route('/').post((request, response) => {
     //TODO: to confirm details to take note
-    const firstName = request.body.first_name;
-    const lastName = request.body.last_name;
-    const primaryDegree = request.body.primary_degree;
-    const secondaryDegree = request.body.secondary_degree;
+    const firstName = request.body.firstName;
+    const lastName = request.body.lastName;
+    const primaryDegree = request.body.primaryDegree;
+    const secondaryDegree = request.body.secondaryDegree;
     const batch = request.body.batch;
     const nationality = request.body.nationality;
     const race = request.body.race;
     const year = request.body.year;
-    const isAvailable = request.body.is_available;
-    const unavailabilityReason = request.body.unavailability_reason;
-    const unavailableFrom = request.body.unavailable_from;
-    const unavailableTo = request.body.unavailable_to;
-    const isChineseProficient = request.body.chinese_proficient;
-    const hasClearedLeadership = request.body.has_cleared_leadership;
+    const isAvailable = request.body.isAvailable;
+    const unavailabilityReason = request.body.unavailabilityReason;
+    const unavailableFrom = request.body.unavailableFrom;
+    const unavailableTo = request.body.unavailableTo;
+    const isChineseProficient = request.body.isChineseProficient;
+    const hasClearedLeadership = request.body.hasClearedLeadership;
     const tourCount = 0;
-    const events = 0;
-    //TODO: update creation date, update date based on current date time.now()
-    const createdOn = request.body.created_on
-    const updatedOn = createdOn
+    const eventCount = 0;
 
     const ambassador = new Ambassador({
         firstName,
@@ -54,53 +59,61 @@ router.route('/').post((request, response) => {
         isChineseProficient,
         hasClearedLeadership,
         tourCount,
-        events,
-        createdOn,
-        updatedOn
+        eventCount
     });
 
     ambassador.save()
-        .then(()=> response.status(201).json(`Ambassador ${firstName} ${lastName} added successfully.`))
-        .catch(error => response.status(400).json(`Error: ${error}`));
+        .then(()=> response.status(201).json({
+            "ambassador": ambassador,
+            "code" : "ADDED",
+            "message": `Ambassador ${firstName} ${lastName} added successfully.`}))
+        .catch(error => response.status(400).json({
+            "code": "INVALID_INPUT",
+            "message": `${error}`}));
 });
 
 // PUT/ ambassadors
-router.route('/').put((request, response) => {
+router.route('/:id').put((request, response) => {
     Ambassador.findById(request.params.id)
         .then(ambassador => {
-            ambassador.firstName = request.body.first_name;
-            ambassador.lastName = request.body.last_name;
-            ambassador.primaryDegree = request.body.primary_degree;
-            ambassador.secondaryDegree = request.body.secondary_degree;
+            ambassador.firstName = request.body.firstName;
+            ambassador.lastName = request.body.lastName;
+            ambassador.primaryDegree = request.body.primaryDegree;
+            ambassador.secondaryDegree = request.body.secondaryDegree;
             ambassador.batch = request.body.batch;
             ambassador.nationality = request.body.nationality;
             ambassador.race = request.body.race;
             ambassador.year = request.body.year;
-            ambassador.isAvailable = request.body.is_available;
-            ambassador.unavailabilityReason = request.body.unavailability_reason;
-            ambassador.unavailableFrom = request.body.unavailable_from;
-            ambassador.unavailableTo = request.body.unavailable_to;
-            ambassador.isChineseProficient = request.body.chinese_proficient;
-            ambassador.hasClearedLeadership = request.body.has_cleared_leadership;
-            ambassador.tourCount = 0;
-            ambassador.events = 0;
-            //TODO: update date based on current date time.now()
-            ambassador.updatedOn = null;
-            //TODO: check if theere is proper status code for update
+            ambassador.isAvailable = request.body.isAvailable;
+            ambassador.unavailabilityReason = request.body.unavailabilityReason;
+            ambassador.unavailableFrom = request.body.unavailableFrom;
+            ambassador.unavailableTo = request.body.unavailableTo;
+            ambassador.isChineseProficient = request.body.isChineseProficient;
+            ambassador.hasClearedLeadership = request.body.hasClearedLeadership;
+            ambassador.tourCount = request.body.tourCount;
+            ambassador.eventCount = request.body.eventCount;
+            
             ambassador.save()
-                .then(() => response.status(200).json(`Ambassador ${firstName} ${lastName} updated successfully.`))
-                .catch(error => response.status(400).json(`Error: ${error}`));
+                .then(() => response.status(200).json({
+                    "ambassador": ambassador,
+                    "code": "UPDATED",
+                    "message": `Ambassador ${ambassador.firstName} ${ambassador.lastName} updated successfully.`}))
+                .catch(error => response.status(400).json(`message: ${error}`));
         })
-        .catch(error => response.status(400).json(`Error: ${error}`));
+        .catch(error => response.status(400).json({
+            "code": "INVALID_INPUT",
+            "message:": `${error}`}));
 });
 
 // DELETE/ ambassadors
 router.route('/:id').delete((request, response) => {
-    firstName = request.body.first_name;
-    lastName = request.body.last_name;
     Ambassador.findByIdAndDelete(request.params.id)
-        .then(() => response.status(200).json(`Ambassador ${firstName} ${lastName} has been deleted.`))
-        .catch(error => response.status(400).json(`Error: ${error}`));
+        .then(() => response.status(200).json({
+            "code": "DELETED",
+            "message": `Ambassador has been deleted.`}))
+        .catch(error => response.status(400).json({
+            "code": "INVALID_INPUT",
+            "message": `${error}`}));
 });
 
 module.exports = router;
