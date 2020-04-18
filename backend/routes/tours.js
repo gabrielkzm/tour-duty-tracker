@@ -10,7 +10,7 @@ router.route('/').get((_, response) => {
         }))
         .catch(error => response.status(400).json({
             "code": "INVALID_INPUT",
-            "message": `${error}`
+            "message": error
         }));
 });
 
@@ -62,7 +62,7 @@ router.route('/').post((request, response) => {
         }))
         .catch(error => response.status(400).json({
             "code": "INVALID_INPUT",
-            "message": `${error}`
+            "message": error
         }));
 });
 
@@ -89,12 +89,12 @@ router.route('/:id').put((request, response) => {
                 }))
                 .catch(error => response.status(400).json({
                     "code": "INVALID_INPUT",
-                    "message": `${error}`
+                    "message": error
                 }));
         })
         .catch(error => response.status(400).json({
             "code": "INVALID_INPUT",
-            "message": `${error}`
+            "message": error
         }));
 });
 
@@ -107,7 +107,7 @@ router.route('/:id').delete((request, response) => {
         }))
         .catch(error => response.status(400).json({
             "code": "INVALID_INPUT",
-            "message": `${error}`
+            "message": error
         }));
 });
 

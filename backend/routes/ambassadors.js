@@ -9,7 +9,7 @@ router.route('/').get((_, response) => {
             "ambssadors":ambassadors}))
         .catch(error => response.status(400).json({
             "code": "INALID_INPUT",
-            "message": `${error}`}));
+            "message": error}));
 });
 
 // GET/ ambassadors/{id}
@@ -20,7 +20,7 @@ router.route('/:id').get((request, response) => {
             "ambassador":ambassador}))
         .catch(error => response.status(400).json({
             "code": "INVALID_INPUT",
-            "message": `${error}`}));
+            "message": error}));
 });
 
 // POST/ ambassadors
@@ -69,7 +69,7 @@ router.route('/').post((request, response) => {
             "message": `Ambassador ${firstName} ${lastName} added successfully.`}))
         .catch(error => response.status(400).json({
             "code": "INVALID_INPUT",
-            "message": `${error}`}));
+            "message": error}));
 });
 
 // PUT/ ambassadors
@@ -98,11 +98,13 @@ router.route('/:id').put((request, response) => {
                     "ambassador": ambassador,
                     "code": "UPDATED",
                     "message": `Ambassador ${ambassador.firstName} ${ambassador.lastName} updated successfully.`}))
-                .catch(error => response.status(400).json(`message: ${error}`));
+                .catch(error => response.status(400).json({
+                    "code": "INVALID_INPUT",
+                    "message" : error}));
         })
         .catch(error => response.status(400).json({
             "code": "INVALID_INPUT",
-            "message:": `${error}`}));
+            "message:": error}));
 });
 
 // DELETE/ ambassadors
@@ -113,7 +115,7 @@ router.route('/:id').delete((request, response) => {
             "message": `Ambassador has been deleted.`}))
         .catch(error => response.status(400).json({
             "code": "INVALID_INPUT",
-            "message": `${error}`}));
+            "message": error}));
 });
 
 module.exports = router;
