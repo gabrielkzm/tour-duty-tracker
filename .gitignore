@@ -9,6 +9,10 @@ bundle.js
 .pnp.js
 package-lock.json
 *.gz
+.bin
+.cache
+*.bin
+*.cache
 
 # testing
 /coverage
@@ -19,11 +23,13 @@ coverage
 # production
 /build
 dist/
+/dist
 build/
 
 # misc
 .DS_Store
 .env.local
+.env.*.local
 .env.development.local
 .env.test.local
 .env.production.local
@@ -40,6 +46,7 @@ yarn-error.log*
 .idea
 *.eslintcache
 .vscode/*
+.vscode
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
@@ -54,7 +61,10 @@ pids
 # others
 lib-cov
 .npm
-
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
 # Mongo
 /build
