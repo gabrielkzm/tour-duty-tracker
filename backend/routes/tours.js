@@ -16,7 +16,7 @@ router.route('/').get((_, response) => {
 
 // GET/ tours/1
 router.route('/:id').get((request, response) => {
-    id = request.params.id
+    let id = request.params.id
     Tour.findById(id)
         .then(tours => response.status(200).json({
             "code": "SUCCESS",
@@ -30,16 +30,30 @@ router.route('/:id').get((request, response) => {
 
 // POST/ tours
 router.route('/').post((request, response) => {
-    name = request.body.name;
-    date = request.body.date;
-    startTime = request.body.startTime;
-    endTime = request.body.endTime;
-    type = request.body.type;
-    ambassadorAccepted = request.body.ambassadorAccepted;
-    ambassadorDeclinedWithReason = request.body.ambassadorDeclinedWithReason;
-    ambassadorDeclinedWithoutReason = request.body.ambassadorDeclinedWithoutReason;
-    assignedAmbassadors = request.body.assignedAmbassadors;
-    ambassadorIC = request.body.ambassadorIC;
+    let name = request.body.name;
+    let date = request.body.date;
+    let startTime = request.body.startTime;
+    let endTime = request.body.endTime;
+    let type = request.body.type;
+    let ambassadorAccepted = request.body.ambassadorAccepted;
+    let ambassadorDeclinedWithReason = request.body.ambassadorDeclinedWithReason;
+    let ambassadorDeclinedWithoutReason = request.body.ambassadorDeclinedWithoutReason;
+    let assignedAmbassadors = request.body.assignedAmbassadors;
+    let ambassadorIC = request.body.ambassadorIC;
+    let numberOfAmbassadorsRequired = request.body.numberOfAmbassadorsRequired;
+    let numberOfGuests = request.body.numberOfGuests;
+    let attire = request.body.attire;
+    let purposeOfTour = request.body.purposeOfTour;
+    let guestProfile = request.body.guestProfile;
+    let checkPoints = request.body.checkPoints;
+    let startPoint = request.body.startPoint;
+    let endPoint = request.body.endPoint;
+    let remarks = request.body.remarks;
+    let office = request.body.office;
+    let officePhoneContact = request.body.officePhoneContact;
+    let officeEmailContact = request.body.officeEmailContact;
+    let officeLiaison = request.body.officeLiaison;
+
 
     const tour = new Tour({
         name,
@@ -47,11 +61,24 @@ router.route('/').post((request, response) => {
         startTime,
         endTime,
         type,
+        numberOfGuests,
+        numberOfAmbassadorsRequired,
         ambassadorAccepted,
         ambassadorDeclinedWithReason,
         ambassadorDeclinedWithoutReason,
         assignedAmbassadors,
-        ambassadorIC
+        ambassadorIC,
+        attire,
+        purposeOfTour,
+        guestProfile,
+        checkPoints,
+        startPoint,
+        endPoint,
+        remarks,
+        office,
+        officePhoneContact,
+        officeEmailContact,
+        officeLiaison
     });
 
     tour.save()
@@ -75,11 +102,24 @@ router.route('/:id').put((request, response) => {
             tour.startTime = request.body.startTime;
             tour.endTime = request.body.endTime;
             tour.type = request.body.type;
+            tour.numberOfGuests = request.body.numberOfGuests;
+            tour.numberOfAmbassadorsRequired = request.body.numberOfAmbassadorsRequired;
             tour.ambassadorAccepted = request.body.ambassadorAccepted;
             tour.ambassadorDeclinedWithReason = request.body.ambassadorDeclinedWithReason;
             tour.ambassadorDeclinedWithoutReason = request.body.ambassadorDeclinedWithoutReason;
             tour.assignedAmbassadors = request.body.assignedAmbassadors;
             tour.ambassadorIC = request.body.ambassadorIC;
+            tour.attire = request.body.attire;
+            tour.purposeOfTour = request.body.purposeOfTour;
+            tour.guestProfile = request.body.guestProfile;
+            tour.checkPoints = request.body.checkPoints;
+            tour.startPoint = request.body.startPoint;
+            tour.endPoint = request.body.endPoint;
+            tour.remarks = request.body.remarks;
+            tour.office = request.body.office;
+            tour.officePhoneContact = request.body.officePhoneContact;
+            tour.officeEmailContact = request.body.officeEmailContact;
+            tour.officeLiaison = request.body.officeLiaison;
 
             tour.save()
                 .then(() => response.status(200).json({
