@@ -1,8 +1,6 @@
 <template>
   <div>
-    <vcontainer fluid>
-      <NavBar :isFullNavBar="true" />
-    </vcontainer>
+    <NavBar :isFullNavBar="true" :hasUserOptions="true"/>
     <v-content>
       <router-view />
     </v-content>
@@ -10,7 +8,7 @@
 </template>
 
 <script>
-import NavBar from '@/components/NavBar'
+import NavBar from "@/components/NavBar";
 export default {
   name: "HomeView",
   components: {

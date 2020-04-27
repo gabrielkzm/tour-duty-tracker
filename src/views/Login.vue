@@ -1,14 +1,13 @@
 <template>
   <div>
     <v-container fluid>
-      <NavBar :isFullNavBar="false" />
+      <NavBar :isFullNavBar="false" :hasUserOptions="false"/>
     </v-container>
     <v-container class="fill-height" fluid>
-      
       <v-row align="center" justify="center">
         <v-col cols="12" sm="8" md="4">
           <v-card class="elevation-12">
-            <v-toolbar color="#151c55" dark flat>
+            <v-toolbar color="#151c55" dark short elevation="6">
               <v-toolbar-title>Sign In</v-toolbar-title>
             </v-toolbar>
             <v-card-text>
@@ -16,7 +15,7 @@
                 <v-text-field
                   label="Username"
                   name="login"
-                  prepend-inner-icon="mdi-account"
+                  prepend-icon="mdi-account"
                   type="password"
                   color="#151c55"
                 />
@@ -24,7 +23,7 @@
                   id="password"
                   label="Password"
                   name="password"
-                  prepend-inner-icon="mdi-lock"
+                  prepend-icon="mdi-lock"
                   type="password"
                   color="#151c55"
                 />
