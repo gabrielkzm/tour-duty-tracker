@@ -1,21 +1,21 @@
 <template>
-  <v-container>
+  <v-container cols="12" flex>
       <v-app-bar app color="#151C55" dense dark fixed>
         <!-- TODO: add v-navigation-drawer -->
         <!-- TODO: Change logo -->
         <div class="d-flex align-center">
-          <v-img
+          <router-link to="/tours" tag="span" style="cursor:pointer"><v-img
             alt="ASMU Logo"
             class="shrink mr-3"
             contain
             src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
             transition="scale-transition"
             width="20"
-          />
-          <h3 class="subtitle-1 font-weight-medium">ASMU TOURS SYSTEM</h3>
+          /></router-link>
+          <router-link to="/tours" tag="span" style="cursor:pointer"><h3 class="subtitle-1 font-weight-medium">ASMU TOURS SYSTEM</h3></router-link>
         </div>
         <v-spacer></v-spacer>
-        <v-menu offset-y v-if="isFullNavBar">
+        <v-menu offset-y v-if="hasUserOptions">
           <template v-slot:activator="{ on }" class="ml-4">
             <v-btn v-on="on" text>
               <span class="mr-2">ADMIN</span>
@@ -50,6 +50,7 @@ export default {
   name: "NavBar",
   props: {
     isFullNavBar: Boolean,
+    hasUserOptions: Boolean,
   },
 
   data() {
