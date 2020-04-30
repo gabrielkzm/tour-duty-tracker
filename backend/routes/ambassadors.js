@@ -26,8 +26,7 @@ router.route('/:id').get((request, response) => {
 // POST/ ambassadors
 router.route('/').post((request, response) => {
     //TODO: to confirm details to take note
-    const firstName = request.body.firstName;
-    const lastName = request.body.lastName;
+    const name = request.body.name;
     const primaryDegree = request.body.primaryDegree;
     const secondaryDegree = request.body.secondaryDegree;
     const batch = request.body.batch;
@@ -40,12 +39,15 @@ router.route('/').post((request, response) => {
     const unavailableTo = request.body.unavailableTo;
     const isChineseProficient = request.body.isChineseProficient;
     const hasClearedLeadership = request.body.hasClearedLeadership;
+    const hasGraduated = request.body.hasGraduated;
+    const gender = request.body.gender;
+    const contact = request.body.contact;
+    const email = request.body.email;
     const tourCount = 0;
     const eventCount = 0;
-
+    
     const ambassador = new Ambassador({
-        firstName,
-        lastName,
+        name,
         primaryDegree,
         secondaryDegree,
         batch,
@@ -59,14 +61,18 @@ router.route('/').post((request, response) => {
         isChineseProficient,
         hasClearedLeadership,
         tourCount,
-        eventCount
+        eventCount,
+        gender,
+        hasGraduated,
+        contact,
+        email,
     });
 
     ambassador.save()
         .then(()=> response.status(201).json({
             "ambassador": ambassador,
             "code" : "ADDED",
-            "message": `Ambassador ${firstName} ${lastName} added successfully.`}))
+            "message": `Ambassador ${name} added successfully.`}))
         .catch(error => response.status(400).json({
             "code": "INVALID_INPUT",
             "message": error}));
@@ -76,8 +82,7 @@ router.route('/').post((request, response) => {
 router.route('/:id').put((request, response) => {
     Ambassador.findById(request.params.id)
         .then(ambassador => {
-            ambassador.firstName = request.body.firstName;
-            ambassador.lastName = request.body.lastName;
+            ambassador.name = request.body.name;
             ambassador.primaryDegree = request.body.primaryDegree;
             ambassador.secondaryDegree = request.body.secondaryDegree;
             ambassador.batch = request.body.batch;
@@ -92,12 +97,16 @@ router.route('/:id').put((request, response) => {
             ambassador.hasClearedLeadership = request.body.hasClearedLeadership;
             ambassador.tourCount = request.body.tourCount;
             ambassador.eventCount = request.body.eventCount;
+            ambassador.gender = request.body.gender;
+            ambassador.hasGraduated = request.body.hasGraduated;
+            ambassador.contact = request.body.contact;
+            ambassador.email = request.body.email;
             
             ambassador.save()
                 .then(() => response.status(200).json({
                     "ambassador": ambassador,
                     "code": "UPDATED",
-                    "message": `Ambassador ${ambassador.firstName} ${ambassador.lastName} updated successfully.`}))
+                    "message": `Ambassador ${ambassador.name} updated successfully.`}))
                 .catch(error => response.status(400).json({
                     "code": "INVALID_INPUT",
                     "message" : error}));

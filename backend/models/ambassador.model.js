@@ -3,8 +3,7 @@ const Schema = mongoose.Schema
 
 const ambassadorSchema = new Schema(
     {
-        firstName: {type: String, required: true},
-        lastName: {type: String, required: true},
+        name: {type: String, required: true},
         //TODO: Future work can be improved here
         primaryDegree: {type: String, required: true},
         secondaryDegree: {type: String},
@@ -18,8 +17,12 @@ const ambassadorSchema = new Schema(
         unavailableTo: {type: Date},
         isChineseProficient: {type: Boolean, required: true},
         hasClearedLeadership: {type: Boolean, required: true},
-        tourCount: {type: Number, required: true},
-        events: {type: Number, required: true},
+        tourCount: {type: mongoose.Types.Map, of: mongoose.Types.ObjectId},
+        eventCount: {type: mongoose.Types.Map, of: mongoose.Types.ObjectId},
+        gender: {type: String, required: true},
+        hasGraudated: {type: Boolean, required: true},
+        contact: {type: Number, required: true},
+        email: {type: String, required: true}
     },
     {
         timestamps: true
