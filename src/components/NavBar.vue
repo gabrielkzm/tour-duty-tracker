@@ -65,6 +65,7 @@ export default {
         { icon: "mdi-account-group", text: "Ambassadors", route:'ambassadors'},
         { icon: "mdi-school", text: "Semesters", route:'semesters'},
         { icon: "mdi-chart-line", text: "Statistics", route:'statistics'},
+        { icon: "mdi-certificate", text: "Graduated Ambassadors", route:'graduatedAmbassadors'},
         { icon: "mdi-calendar-plus", text: "Create Tour", route:'createTour'},
         { icon: "mdi-account-plus", text: "Create Ambassador", route:'createAmbassador'},
         { icon: "mdi-timeline-plus", text: "Create Semester", route:'createSemester'}
