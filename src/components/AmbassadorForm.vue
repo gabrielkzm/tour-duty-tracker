@@ -321,7 +321,7 @@ export default {
         'Others',
       ],
       mandarinProficiency: ['Proficient', 'Average', 'Not proficient'],
-      leadershipStatuses: ['Cleared', 'Not cleared'],
+      leadershipStatuses: ['Cleared', 'Not Cleared'],
       graduationStatuses: ['Graduated', 'Not Graduated'],
       menu: false,
       menuTwo: false,

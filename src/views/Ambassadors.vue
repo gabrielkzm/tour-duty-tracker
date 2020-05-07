@@ -46,7 +46,7 @@
                   <v-icon small class="mr-2">mdi-baby-bottle</v-icon>
                 </div>
                 <div v-else>
-                  <v-icon small class="mr-2" @click="editItem(item)">mdi-briefcase</v-icon>
+                  <v-icon small class="mr-2">mdi-briefcase</v-icon>
                 </div>
               </v-row>
             </v-container>
@@ -135,8 +135,7 @@ export default {
       {
         text: "Name",
         align: "start",
-        value: "name",
-        sortable: false
+        value: "name"
       },
       { text: "Batch", value: "batch" },
       { text: "Year", value: "year" },
@@ -224,7 +223,7 @@ export default {
       val || this.close();
     },
 
-    detailsDiialog: function(val) {
+    detailsDialog: function(val) {
       val || this.close();
     }
   },
@@ -336,11 +335,16 @@ export default {
     save() {
       let editedItem = this.editedItem;
       let ambassadors = this.ambassadors;
-      for (let i = 0; i < ambassadors.length; i++) {
-        let ambass = ambassadors[i];
-        if (ambass.ambassadorID === editedItem.ambassadorID) {
-          Object.assign(this.ambassadors[i], this.editedItem);
+      if (editedItem.ambassadorID !== 0) {
+        for (let i = 0; i < ambassadors.length; i++) {
+          let ambass = ambassadors[i];
+          if (ambass.ambassadorID === editedItem.ambassadorID) {
+            Object.assign(this.ambassadors[i], this.editedItem);
+          }
         }
+      } else {
+        editedItem.ambassadorID = Math.floor(Math.random() * Math.floor(100));
+        ambassadors.push(editedItem);
       }
       this.close();
     }

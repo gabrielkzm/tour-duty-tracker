@@ -54,7 +54,6 @@ export default {
         text: "Name",
         align: "start",
         value: "name",
-        sortable: false
       },
       { text: "Batch", value: "batch" },
       { text: "Degree #1", value: "primaryDegree" },
