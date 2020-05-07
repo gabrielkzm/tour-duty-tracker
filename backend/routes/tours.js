@@ -53,6 +53,7 @@ router.route('/').post((request, response) => {
     let officePhoneContact = request.body.officePhoneContact;
     let officeEmailContact = request.body.officeEmailContact;
     let officeLiaison = request.body.officeLiaison;
+    let status = request.body.status;
 
 
     const tour = new Tour({
@@ -78,7 +79,8 @@ router.route('/').post((request, response) => {
         office,
         officePhoneContact,
         officeEmailContact,
-        officeLiaison
+        officeLiaison,
+        status
     });
 
     tour.save()
@@ -120,6 +122,7 @@ router.route('/:id').put((request, response) => {
             tour.officePhoneContact = request.body.officePhoneContact;
             tour.officeEmailContact = request.body.officeEmailContact;
             tour.officeLiaison = request.body.officeLiaison;
+            tour.status = request.body.status;
 
             tour.save()
                 .then(() => response.status(200).json({

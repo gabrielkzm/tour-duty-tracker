@@ -28,6 +28,7 @@ const tourSchema = new Schema(
         officePhoneContact: {type: Number},
         officeEmailContact: {type: String},
         officeLiaison: {type: String, required: true},
+        status: {type: String, required: true},
     },
     {
         timestamps: true
