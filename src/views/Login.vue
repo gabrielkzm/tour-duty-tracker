@@ -11,13 +11,13 @@
               <v-toolbar-title>Sign In</v-toolbar-title>
             </v-toolbar>
             <v-card-text>
-              <v-form>
+              <v-form id="login-form">
                 <v-text-field
                   label="Username"
                   name="login"
                   prepend-icon="mdi-account"
-                  type="password"
                   color="#151c55"
+                  v-model="username"
                 />
                 <v-text-field
                   id="password"
@@ -26,12 +26,13 @@
                   prepend-icon="mdi-lock"
                   type="password"
                   color="#151c55"
+                  v-model="password"
                 />
               </v-form>
             </v-card-text>
             <v-card-actions>
-              <v-btn color="#151c55" dark>Sign In</v-btn>
-              <v-btn text color="#151c55" x-small>Forgotten your password?</v-btn>
+              <v-btn form="login-form" type="submit" color="#151c55" dark @click='handleSubmit'>Sign In</v-btn>
+              <v-btn text color="#151c55" x-small @click="handleForgottenPassword">Forgotten your password?</v-btn>
             </v-card-actions>
           </v-card>
         </v-col>
@@ -50,21 +51,37 @@ export default {
     NavBar
   },
 
-  data: () => ({})
+  data: () => ({
+    username: '',
+    password: '',
+  }),
+
+  methods:{
+    handleSubmit(e){
+      e.preventDefault();
+      this.$http.post('users/login', {
+        username: this.username,
+        password: this.password
+      })
+      .then(response => {
+        const user = {
+          userID:response.data.user._id,
+          username: response.data.user.username,
+          token: response.data.token
+        }
+        localStorage.setItem('user', JSON.stringify(user))
+        this.$router.push('/');
+      })
+      .catch((error) => {
+        //TODO: Insert snackbar instead
+        alert('Incorrect username/password');
+        console.log(error);
+      })
+    },
+
+    handleForgottenPassword(){
+      alert('Please contact Tours Portfolio Head/Exco/Platform Adminstrator.');
+    }
+  }
 };
 </script>
-
-<style scoped>
-.smuColorGold {
-  color: #8a704c;
-}
-.smuColorBlue {
-  color: #151c55;
-}
-.asmuColorOne {
-  color: #7a6c4b;
-}
-.asmuColorTwo {
-  color: #978c69;
-}
-</style>
