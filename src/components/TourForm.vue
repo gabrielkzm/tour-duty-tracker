@@ -233,9 +233,9 @@
               :items="ambassadors"
             >
               <template v-slot:selection="{item, index}">
-                <span v-if="index === 0" class="mr-1">{{item}}</span>
-                <span v-if="index === 1" class="mr-1">, {{item}}</span>
-                <span v-if="index === 2" class="mr-1">, {{item}}</span>
+                <span v-if="index === 0" class="mr-1">{{item.text}}</span>
+                <span v-if="index === 1" class="mr-1">, {{item.text}}</span>
+                <span v-if="index === 2" class="mr-1">, {{item.text}}</span>
                 <span
                   v-if="index === 3"
                   class="grey--text caption"
@@ -376,7 +376,13 @@ export default {
         "Campus Green",
         "T-Junction"
       ],
-      ambassadors: ["Gabriel", "Louis", "Wei Hao", "Nigel", "John Doe", "N/A"],
+      ambassadors: [
+        { "text": "Gabriel", "value":"000000000000000000000001" },
+        { "text": "Wei Hao", "value": "000000000000000000000002" },
+        { "text": "Nigel", "value": "000000000000000000000003" },
+        { "text": "John Doe", "value": "000000000000000000000004" },
+        { "text": "N/A", "value": "000000000000000000000000" },
+      ],
       offices: ["OUAFA", "IO", "SIS", "SOE", "SOSS", "SOA", "SOL", "LKCSB"],
       date: new Date().toISOString().substr(0, 10),
       menu: false

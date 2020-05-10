@@ -8,7 +8,7 @@
       <v-form>
         <v-row dense>
           <v-col cols="12" md="12">
-            <input type="hidden" v-model="ambassador.id" />
+            <input type="hidden" v-model="ambassador.ambassadorID" />
             <v-text-field
               v-model="ambassador.name"
               label="Full Name"
@@ -280,7 +280,6 @@ export default {
 
   data() {
     return {
-      tourTypes: ["TOUR", "UE"],
       races: [
         'Chinese',
         'Malay',
@@ -311,8 +310,8 @@ export default {
         'N/A'
       ],
       availabilities: [
-        'Available',
-        'Not Available'
+        { 'text': 'Available', "value": true},
+        { 'text': 'Not Available', "value": false},
       ],
       unavailabilityReasons:[
         'N/A',
@@ -321,8 +320,14 @@ export default {
         'Others',
       ],
       mandarinProficiency: ['Proficient', 'Average', 'Not proficient'],
-      leadershipStatuses: ['Cleared', 'Not Cleared'],
-      graduationStatuses: ['Graduated', 'Not Graduated'],
+      leadershipStatuses: [
+        { 'text': 'Cleared', 'value': true },
+        { 'text': 'Not Cleared', 'value': false },
+      ],
+      graduationStatuses: [
+        { 'text': 'Graduated', 'value': true },
+        { 'text': 'Not Graduated', 'value': false },
+      ],
       menu: false,
       menuTwo: false,
     };
