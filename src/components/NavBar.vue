@@ -57,8 +57,8 @@ export default {
     return {
       options: [
         { icon: "mdi-lock-reset", text: "Change Password", route: 'changePassword'},
-        { icon: "mdi-logout", text: "Log Out All", route: '/'},
-        { icon: "mdi-logout-variant", text: "Log Out", route: '/'}
+        { icon: "mdi-logout", text: "Log Out All", route: 'logoutAll'},
+        { icon: "mdi-logout-variant", text: "Log Out", route: 'logout'}
       ],
       tabs: [
         { icon: "mdi-calendar-multiple", text: "Tours", route: 'tours'},

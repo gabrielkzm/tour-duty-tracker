@@ -11,6 +11,8 @@ import CreateAmbassador from '@/views/CreateAmbassador'
 import CreateSemester from '@/views/CreateSemester'
 import ChangePassword from '@/views/ChangePassword'
 import GraduatedAmbassadors from '@/views/GraduatedAmbassadors';
+import Logout from '@/components/Logout';
+import LogoutAll from '@/components/LogoutAll';
 
 Vue.use(Router)
 
@@ -31,8 +33,28 @@ const routes = [
   },
   { path: '/login', name: 'LoginView', component: Login },
   { path: '/ChangePassword', name: 'ChangePassword', component: ChangePassword},
+  { path: '/logout', name: 'logout', component: Logout},
+  { path: '/logoutAll', name: 'logoutAll', component: LogoutAll},
   { path: '*', redirect: '/'}
 ]
-export default new Router({
-  routes
+
+const router = new Router({
+  mode: 'history',
+  routes,
 })
+
+router.beforeEach((to, from, next) => {
+  const publicPaths = ['/login']
+  const isAuthRequiredPaths = !publicPaths.includes(to.path);
+  const isLoggedIn = true;
+  // const user = localStorage.getItem('user');
+  // const isLoggedIn = user !== null ? true : false;
+  // TODO: Uncomment when done
+  if(isAuthRequiredPaths && !isLoggedIn){
+    return next('/login');
+  }else{
+    next();
+  }
+})
+
+export default router;
