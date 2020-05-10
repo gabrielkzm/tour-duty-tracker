@@ -22,6 +22,7 @@ const toursRouter = require('./routes/tours');
 const assignmentsRouter = require('./routes/assignments');
 const emailsRouter = require('./routes/emails');
 const usersRouter = require('./routes/users');
+const semestersRouter = require('./routes/semesters');
 
 app.use('/api/ambassadors', ambassadorsRouter);
 app.use('/api/statistics', statisticsRouter);
@@ -29,6 +30,7 @@ app.use('/api/tours', toursRouter);
 app.use('/assignments', assignmentsRouter);
 app.use('/api/emails', emailsRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/semesters', semestersRouter);
 
 app.listen(port, () =>{
     console.log('Server has been initiated and is running successfully.')

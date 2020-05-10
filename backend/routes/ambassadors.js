@@ -33,18 +33,18 @@ router.route('/').post((request, response) => {
     const nationality = request.body.nationality;
     const race = request.body.race;
     const year = request.body.year;
-    const isAvailable = request.body.isAvailable;
+    const currentAvailability = request.body.currentAvailability;
     const unavailabilityReason = request.body.unavailabilityReason;
-    const unavailableFrom = request.body.unavailableFrom;
-    const unavailableTo = request.body.unavailableTo;
-    const isChineseProficient = request.body.isChineseProficient;
-    const hasClearedLeadership = request.body.hasClearedLeadership;
+    const unavailabilityFrom = request.body.unavailabilityFrom;
+    const unavailabilityTo = request.body.unavailabilityTo;
+    const mandarinProficiency = request.body.mandarinProficiency;
+    const leadershipStatus = request.body.leadershipStatus;
     const hasGraduated = request.body.hasGraduated;
     const gender = request.body.gender;
     const contact = request.body.contact;
     const email = request.body.email;
-    const tourCount = 0;
-    const eventCount = 0;
+    const tourCount = {};
+    const eventCount = {};
     
     const ambassador = new Ambassador({
         name,
@@ -54,12 +54,12 @@ router.route('/').post((request, response) => {
         nationality,
         race,
         year,
-        isAvailable,
+        currentAvailability,
         unavailabilityReason,
-        unavailableFrom,
-        unavailableTo,
-        isChineseProficient,
-        hasClearedLeadership,
+        unavailabilityFrom,
+        unavailabilityTo,
+        mandarinProficiency,
+        leadershipStatus,
         tourCount,
         eventCount,
         gender,
@@ -72,7 +72,7 @@ router.route('/').post((request, response) => {
         .then(()=> response.status(201).json({
             "ambassador": ambassador,
             "code" : "ADDED",
-            "message": `Ambassador ${name} added successfully.`}))
+            "message": `Ambassador ${name} has been added successfully.`}))
         .catch(error => response.status(400).json({
             "code": "INVALID_INPUT",
             "message": error}));
@@ -89,12 +89,12 @@ router.route('/:id').put((request, response) => {
             ambassador.nationality = request.body.nationality;
             ambassador.race = request.body.race;
             ambassador.year = request.body.year;
-            ambassador.isAvailable = request.body.isAvailable;
+            ambassador.currentAvailability = request.body.currentAvailability;
             ambassador.unavailabilityReason = request.body.unavailabilityReason;
-            ambassador.unavailableFrom = request.body.unavailableFrom;
-            ambassador.unavailableTo = request.body.unavailableTo;
-            ambassador.isChineseProficient = request.body.isChineseProficient;
-            ambassador.hasClearedLeadership = request.body.hasClearedLeadership;
+            ambassador.unavailabilityFrom = request.body.unavailabilityFrom;
+            ambassador.unavailabilityTo = request.body.unavailabilityTo;
+            ambassador.mandarinProficiency = request.body.mandarinProficiency;
+            ambassador.leadershipStatus = request.body.leadershipStatus;
             ambassador.tourCount = request.body.tourCount;
             ambassador.eventCount = request.body.eventCount;
             ambassador.gender = request.body.gender;

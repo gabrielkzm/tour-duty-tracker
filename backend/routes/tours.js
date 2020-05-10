@@ -32,12 +32,12 @@ router.route('/:id').get((request, response) => {
 router.route('/').post((request, response) => {
     let name = request.body.name;
     let date = request.body.date;
-    let startTime = request.body.startTime;
-    let endTime = request.body.endTime;
+    let startTime = date + 'T' + request.body.startTime + ':00Z';
+    let endTime = date + 'T' + request.body.endTime + ':00Z';
     let type = request.body.type;
-    let ambassadorAccepted = request.body.ambassadorAccepted;
-    let ambassadorDeclinedWithReason = request.body.ambassadorDeclinedWithReason;
-    let ambassadorDeclinedWithoutReason = request.body.ambassadorDeclinedWithoutReason;
+    let ambassadorsAccepted = request.body.ambassadorsAccepted;
+    let ambassadorsDeclinedWithReason = request.body.ambassadorsDeclinedWithReason;
+    let ambassadorsDeclinedWithoutReason = request.body.ambassadorsDeclinedWithoutReason;
     let assignedAmbassadors = request.body.assignedAmbassadors;
     let ambassadorIC = request.body.ambassadorIC;
     let numberOfAmbassadorsRequired = request.body.numberOfAmbassadorsRequired;
@@ -64,9 +64,9 @@ router.route('/').post((request, response) => {
         type,
         numberOfGuests,
         numberOfAmbassadorsRequired,
-        ambassadorAccepted,
-        ambassadorDeclinedWithReason,
-        ambassadorDeclinedWithoutReason,
+        ambassadorsAccepted,
+        ambassadorsDeclinedWithReason,
+        ambassadorsDeclinedWithoutReason,
         assignedAmbassadors,
         ambassadorIC,
         attire,
@@ -106,9 +106,9 @@ router.route('/:id').put((request, response) => {
             tour.type = request.body.type;
             tour.numberOfGuests = request.body.numberOfGuests;
             tour.numberOfAmbassadorsRequired = request.body.numberOfAmbassadorsRequired;
-            tour.ambassadorAccepted = request.body.ambassadorAccepted;
-            tour.ambassadorDeclinedWithReason = request.body.ambassadorDeclinedWithReason;
-            tour.ambassadorDeclinedWithoutReason = request.body.ambassadorDeclinedWithoutReason;
+            tour.ambassadorsAccepted = request.body.ambassadorsAccepted;
+            tour.ambassadorsDeclinedWithReason = request.body.ambassadorsDeclinedWithReason;
+            tour.ambassadorsDeclinedWithoutReason = request.body.ambassadorsDeclinedWithoutReason;
             tour.assignedAmbassadors = request.body.assignedAmbassadors;
             tour.ambassadorIC = request.body.ambassadorIC;
             tour.attire = request.body.attire;
