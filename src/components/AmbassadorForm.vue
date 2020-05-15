@@ -123,7 +123,7 @@
             <v-autocomplete
               v-model="ambassador.gender"
               label="Gender"
-              prepend-icon="mdi-gender"
+              prepend-icon="mdi-gender-male-female"
               name="gender"
               required
               dense
@@ -247,7 +247,7 @@
             <v-autocomplete
               v-model="ambassador.hasGraduated"
               label="Graduation status"
-              prepend-icon="mdi-seal-variant-outline"
+              prepend-icon="mdi-certificate-outline"
               name="graduationStatus"
               required
               dense
@@ -319,7 +319,7 @@ export default {
         'Overseas Exchange',
         'Others',
       ],
-      mandarinProficiency: ['Proficient', 'Average', 'Not proficient'],
+      mandarinProficiency: ['Proficient', 'Average', 'Not Proficient'],
       leadershipStatuses: [
         { 'text': 'Cleared', 'value': true },
         { 'text': 'Not Cleared', 'value': false },

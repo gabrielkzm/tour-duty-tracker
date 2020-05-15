@@ -17,7 +17,7 @@
               <span><v-icon small>mdi-map</v-icon> Nationality: {{ambassador.nationality}}</span>
             </v-col>
             <v-col md="6">
-              <span><v-icon small>mdi-school</v-icon> Graduated: {{ambassador.hasGraduated}}</span>
+              <span><v-icon small>mdi-certificate-outline</v-icon> Graduated: {{ambassador.hasGraduated}}</span>
             </v-col>
           </v-row>
           <v-row v-show="!unavailablityDetails">
@@ -32,20 +32,25 @@
           </v-row>
           <v-row v-show="unavailablityDetails">
             <v-col md="12">
-              <span><v-icon small>mdi-email</v-icon> Availablity: {{ambassador.currentAvailability}}</span>
+              <span v-if="ambassador.currentAvailability === 'Not Available'">
+                <v-icon small>mdi-calendar-check-outline</v-icon> Availablity: Not Available
+              </span>
+              <span v-else>
+                <v-icon small>mdi-calendar-check-outline</v-icon> Availablity: Available
+              </span>
             </v-col>
           </v-row>
           <v-row v-show="unavailablityDetails">
             <v-col md="12">
-              <span><v-icon small>mdi-email</v-icon> Reasons: {{ambassador.unavailabilityReason}}</span>
+              <span><v-icon small>mdi-calendar-remove-outline</v-icon> Reasons: {{ambassador.unavailabilityReason}}</span>
             </v-col>
           </v-row>
           <v-row v-show="unavailablityDetails">
             <v-col md="6">
-              <span><v-icon small>mdi-email</v-icon> Reasons: {{ambassador.unavailabilityFrom}}</span>
+              <span><v-icon small>mdi-calendar-month-outline</v-icon> Reasons: {{ambassador.unavailabilityFrom}}</span>
             </v-col>
             <v-col md="6">
-              <span><v-icon small>mdi-email</v-icon> Reasons: {{ambassador.unavailabilityTo}}</span>
+              <span><v-icon small>mdi-calendar-month-outline</v-icon> Reasons: {{ambassador.unavailabilityTo}}</span>
             </v-col>
           </v-row>
         </div>

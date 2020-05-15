@@ -2,7 +2,7 @@
   <v-col xs="12" sm="6" md="3">
     <v-card class="pa-4 mr-2" outlined>
       <div class="overline mb-2 font-weight-medium" style="color:#978c69">{{title}}</div>
-      <div class="title text-capitalize" style="color:#8a704c">{{value}}</div>
+      <div class="subtitle-1 font-weight-bold text-capitalize" style="color:#8a704c">{{value}}</div>
     </v-card>
   </v-col>
 </template>
