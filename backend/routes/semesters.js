@@ -1,4 +1,6 @@
 const router = require('express').Router();
+const auth = require('../auth.js');
+
 let Semester = require('../models/semester.model');
 //TODO: Put guards for all relevant backend endpoints
 
@@ -30,7 +32,7 @@ router.route('/:id').get((request, response) => {
 });
 
 // POST/ semesters
-router.route('/').post((request, response) => {
+router.route('/').post(auth, (request, response) => {
     let startDate = request.body.startDate;
     let endDate = request.body.endDate;
 
@@ -56,14 +58,16 @@ router.route('/').post((request, response) => {
 router.route('/:id').put((request, response) => {
     Semester.findById(request.params.id)
         .then(semester => {
-            semester.startDate = request.body.startDate;
-            semester.endDate = request.body.endDate;
+            const startDate = request.body.startDate;
+            const endDate = request.body.endDate;
+            semester.startDate = startDate;
+            semester.endDate = endDate;
 
             semester.save()
                 .then(() => response.status(200).json({
                     "semester": semester,
                     "code": 'UPDATED',
-                    "message": `Semester has been updated successfully to period: ${semester.startDate} to ${semester.endDate}`
+                    "message": `Semester ID: ${semester._id} has been updated successfully.`
                 }))
                 .catch(error => response.status(400).json({
                     "code": "INVALID_INPUT",
@@ -77,11 +81,12 @@ router.route('/:id').put((request, response) => {
 });
 
 // DELETE/ semesters/1
-router.route('/:id').delete((request, response) => {
-    Semester.findByIdAndDelete(request.params.id)
+router.route('/:id').delete(auth, (request, response) => {
+    const id = request.params.id
+    Semester.findByIdAndDelete(id)
         .then(() => response.status(200).json({
             "code": "DELETED",
-            "message": `Semester has been deleted.`
+            "message": `Semester ID: ${id} has been deleted.`
         }))
         .catch(error => response.status(400).json({
             "code": "INVALID_INPUT",

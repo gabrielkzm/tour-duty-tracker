@@ -4,23 +4,23 @@ const auth = require('../auth.js');
 
 // POST/ users
 // Uncomment for creation of user
-// router.route('/').post(async (request, response) => {
-//     try{
-//         const user = new User(request.body)
-//         await user.save()
-//         const token = await user.generateAuthToken()
-//         response.status(201).json({
-//             "user": user,
-//             "token": token,
-//             "code": "CREATED",
-//         })
-//     }catch(error){
-//         response.status(400).json({
-//             "code":"CREATION_FAILED",
-//             "message": error
-//         })
-//     }
-// });
+router.route('/').post(async (request, response) => {
+    try{
+        const user = new User(request.body)
+        await user.save()
+        const token = await user.generateAuthToken()
+        response.status(201).json({
+            "user": user,
+            "token": token,
+            "code": "CREATED",
+        })
+    }catch(error){
+        response.status(400).json({
+            "code":"CREATION_FAILED",
+            "message": error
+        })
+    }
+});
 
 // POST/ users
 // Login
@@ -48,13 +48,48 @@ router.route('/login').post((request, response) => {
         }));
 });
 
+router.route('/changePassword').put(auth, async (request,response) => {
+    const username = request.user.username
+    const password = request.body.password
+    User.findByCredentials(username, password)
+        .then(user => {
+            if(request.body.pin !== process.env.PIN){
+                response.status(400).json({
+                    "code": "INVALID_PIN",
+                    "message": "Invalid pin. Please contact ASMU Exco/Administrator."
+                })
+            }else{
+                user.password = request.body.newPassword;
+                user.tokens = user.tokens.filter((token) => {
+                    return token.token === request.token
+                })
+                user.save()
+                    .then(() => response.status(200).json({
+                        "code":"SUCCESS",
+                        "message": `Password has been changed successfully for ${user.username}`
+                    }))
+                    .catch(error => response.status(500).json({
+                        "code": "INTERNAL_ERROR",
+                        "message": error
+                    }));
+            }
+        })
+        .catch(error => {
+            console.log(error);
+            response.status(400).json({
+                "code": "INVALID_CREDENTIALS",
+                "message": 'Invalid current password has been entered.'
+            })
+        });
+})
+
 // DEL/ users
 // Uncomment to delete user
-// router.route('/:id').delete(auth, (request, response) => {
-//     User.findByIdAndDelete(request.params.id)
+// router.route('/').delete(auth, (request, response) => {
+//     User.findByIdAndDelete(request.user._id)
 //         .then(() => response.status(200).json({
 //             "code": "DELETED",
-//             "message": `User has been deleted.`}))
+//             "message": `${request.user.username} has been deleted.`}))
 //         .catch(error => response.status(400).json({
 //             "code": "INVALID_INPUT",
 //             "message": error}));

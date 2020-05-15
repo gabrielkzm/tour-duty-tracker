@@ -2,11 +2,16 @@ const router = require('express').Router();
 let Ambassador = require('../models/ambassador.model');
 
 // GET/ ambassadors
-router.route('/').get((_, response) => {
-    Ambassador.find()
+router.route('/').get((request, response) => {
+    let filters = request.query.filter;
+    if(filters != null){
+        filters = {hasGraduated: filters.hasGraduated};
+    }
+    
+    Ambassador.find(filters)
         .then(ambassadors => response.status(200).json({
             "code":"SUCCESS",
-            "ambssadors":ambassadors}))
+            "ambassadors":ambassadors}))
         .catch(error => response.status(400).json({
             "code": "INALID_INPUT",
             "message": error}));
@@ -118,10 +123,11 @@ router.route('/:id').put((request, response) => {
 
 // DELETE/ ambassadors
 router.route('/:id').delete((request, response) => {
-    Ambassador.findByIdAndDelete(request.params.id)
+    const id = request.params.id
+    Ambassador.findByIdAndDelete(id)
         .then(() => response.status(200).json({
             "code": "DELETED",
-            "message": `Ambassador has been deleted.`}))
+            "message": `Ambassador ID: ${id} has been deleted.`}))
         .catch(error => response.status(400).json({
             "code": "INVALID_INPUT",
             "message": error}));
