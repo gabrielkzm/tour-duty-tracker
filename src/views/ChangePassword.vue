@@ -37,6 +37,7 @@
                       required
                       dense
                       color="#151c55"
+                      v-model="user.password"
                     ></v-text-field>
                   </v-col>
                 </v-row>
@@ -50,6 +51,7 @@
                       required
                       dense
                       color="#151c55"
+                      v-model="user.newPassword"
                     ></v-text-field>
                   </v-col>
                 </v-row>
@@ -63,6 +65,7 @@
                       required
                       dense
                       color="#151c55"
+                      v-model="user.confirmNewPassword"
                     ></v-text-field>
                   </v-col>
                 </v-row>
@@ -76,13 +79,14 @@
                       required
                       dense
                       color="#151c55"
+                      v-model="user.pin"
                     ></v-text-field>
                   </v-col>
                 </v-row>
-                <v-btn color="#151c55" small dark class="ma-1">
+                <v-btn color="#151c55" small dark class="ma-1" @click="handleSubmit">
                   <v-icon class="mr-1" small>mdi-check-circle</v-icon>Confirm
                 </v-btn>
-                <v-btn color="error" small dark class="ma-1">
+                <v-btn color="error" small dark class="ma-1" @click="handleCancel">
                   <v-icon class="mr-1" small>mdi-close-circle</v-icon>Cancel
                 </v-btn>
               </v-form>
@@ -90,6 +94,8 @@
           </v-card>
         </v-col>
       </v-row>
+      <v-snackbar color="success" :timeout="timeout" top v-model="snackbarSuccess">{{snackbarText}}<v-btn dark text @click='snackbarSuccess=false'>Close</v-btn></v-snackbar>
+    <v-snackbar color="error" :timeout="timeout" top v-model="snackbarFail">{{snackbarText}}<v-btn dark text @click='snackbarFail=false'>Close</v-btn></v-snackbar>
     </v-container>
   </div>
 </template>
@@ -105,7 +111,55 @@ export default {
   },
 
   data() {
-    return {};
+    return {
+      snackbarSuccess: false,
+      snackbarFail: false,
+      snackbarText: '',
+      timeout: 2000,
+
+      user: {
+        password: null,
+        newPassword: null,
+        confirmNewPassword: null,
+        pin: null,
+      },
+
+      defaultUser:{
+        password: null,
+        newPassword: null,
+        confirmNewPassword: null,
+        pin: null
+      }
+    };
+  },
+
+  methods: {
+    handleCancel(){
+      this.user = Object.assign({}, this.defaultUser);
+      this.snackbarText = 'Your entry has been cleared';
+      this.snackbarFail = true;
+    },
+
+    handleSubmit(e){
+      e.preventDefault();
+      this.$http.put('users/changePassword', this.user)
+        .then(response => {
+          this.snackbarText = response.data.message;
+          this.snackbarSuccess = true;
+          this.user = Object.assign({}, this.defaultUser);
+        })
+        .catch(error => {
+          if(error.response.status === 400){
+            this.snackbarText = error.response.data.message;
+          }else{
+            this.snackbarText = 'Something went wrong. Pleae contact Tours Portfolio Head/EXCO/Administrator.'  
+          }
+          this.snackbarFail = true;
+          console.log(error);
+        })
+      
+    
+    }
   }
 };
 </script>
