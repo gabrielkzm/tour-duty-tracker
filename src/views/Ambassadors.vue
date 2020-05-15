@@ -5,6 +5,8 @@
         <v-data-table
           :headers="headers"
           :items="ambassadors"
+          :loading="loading"
+          :loading-text="loadingText"
           :footer-props="{
             itemsPerPageOptions: [60,80,100,120, -1]
           }"
@@ -28,6 +30,20 @@
                   :formTitle="formTitle"
                 />
               </v-dialog>
+              <v-dialog v-model="unavailabilityDialog" max-width="500px">
+                <AmbassadorDetailsCard
+                  :ambassador="viewItem"
+                  :onClose="close"
+                  :unavailablityDetails="true"
+                />
+              </v-dialog>
+              <v-dialog v-model="detailsDialog" max-width="500px">
+                  <AmbassadorDetailsCard
+                    :ambassador="viewItem"
+                    :onClose="close"
+                    :unavailablityDetails="false"
+                  />
+                </v-dialog>
             </v-toolbar>
           </template>
           <template v-slot:item.name="{ item }">
@@ -35,13 +51,6 @@
               <v-row>
                 <span class="mr-2">{{item.name}}</span>
                 <v-icon small class="mr-2" @click="getDetails(item)">mdi-open-in-new</v-icon>
-                <v-dialog v-model="detailsDialog" max-width="500px">
-                  <AmbassadorDetailsCard
-                    :ambassador="viewItem"
-                    :onClose="close"
-                    :unavailablityDetails="false"
-                  />
-                </v-dialog>
                 <div v-if="batches[0] === item.batch">
                   <v-icon small class="mr-2">mdi-baby-bottle</v-icon>
                 </div>
@@ -52,12 +61,12 @@
             </v-container>
           </template>
           <template v-slot:item.currentAvailability="{ item }">
-            <div v-show="item.currentAvailability === 'Available'">
+            <div v-show="item.currentAvailability">
               <v-chip color="success" dark x-small class="mr-2">
                 <v-icon x-small>mdi-check-circle</v-icon>
               </v-chip>
             </div>
-            <div v-show="item.currentAvailability === 'Not Available'">
+            <div v-show="!item.currentAvailability">
               <v-chip
                 color="error"
                 dark
@@ -67,13 +76,6 @@
               >
                 <v-icon x-small>mdi-close-circle</v-icon>
               </v-chip>
-              <v-dialog v-model="unavailabilityDialog" max-width="500px">
-                <AmbassadorDetailsCard
-                  :ambassador="viewItem"
-                  :onClose="close"
-                  :unavailablityDetails="true"
-                />
-              </v-dialog>
             </div>
           </template>
           <template v-slot:item.mandarinProficiency="{ item }">
@@ -94,12 +96,12 @@
             </div>
           </template>
           <template v-slot:item.leadershipStatus="{ item }">
-            <div v-show="item.leadershipStatus === 'Cleared'">
+            <div v-show="item.leadershipStatus">
               <v-chip color="success" dark x-small class="mr-2">
                 <v-icon x-small>mdi-check-circle</v-icon>
               </v-chip>
             </div>
-            <div v-show="item.leadershipStatus === 'Not Cleared'">
+            <div v-show="!item.leadershipStatus">
               <v-chip color="error" dark x-small class="mr-2">
                 <v-icon x-small>mdi-close-circle</v-icon>
               </v-chip>
@@ -112,6 +114,19 @@
         </v-data-table>
       </v-col>
     </v-row>
+    <v-snackbar color="success" :timeout="timeout" top v-model="snackbarSuccess">
+      {{snackbarText}}
+      <v-btn dark text @click="snackbarSuccess=false">Close</v-btn>
+    </v-snackbar>
+    <v-snackbar color="error" :timeout="timeout" top v-model="snackbarFail">
+      {{snackbarText}}
+      <v-btn dark text @click="snackbarFail=false">Close</v-btn>
+    </v-snackbar>
+    <v-snackbar color="warning" timeout="5000" right v-model="snackbarDelete">
+      <span>Are you sure you want to delete this ambassador?</span>
+      <v-btn dark text @click="deleteAmbassador">Delete</v-btn>
+      <v-btn dark text @click="snackbarDelete=false">Close</v-btn>
+    </v-snackbar>
   </v-container>
 </template>
 
@@ -128,9 +143,17 @@ export default {
   },
 
   data: () => ({
+    index: null,
+    loading: "#151c55",
+    loadingText: "loading items...",
     dialog: false,
     detailsDialog: false,
     unavailabilityDialog: false,
+    snackbarText: '',
+    snackbarSuccess: false,
+    snackbarFail : false,
+    snackbarDelete: false,
+    timeout: 2000,
     headers: [
       {
         text: "Name",
@@ -165,7 +188,7 @@ export default {
       mandarinProficiency: "",
       leadershipStatus: "",
       hasGraduated: "",
-      contact: 0,
+      contact: null,
       email: ""
     },
     defaultItem: {
@@ -185,7 +208,7 @@ export default {
       mandarinProficiency: "",
       leadershipStatus: "",
       hasGraduated: "",
-      contact: 0,
+      contact: null,
       email: ""
     },
     viewItem: {
@@ -205,7 +228,7 @@ export default {
       mandarinProficiency: "",
       leadershipStatus: "",
       hasGraduated: "",
-      contact: 0,
+      contact: null,
       email: ""
     }
   }),
@@ -225,99 +248,88 @@ export default {
 
     detailsDialog: function(val) {
       val || this.close();
+    },
+
+    unavailabilityDialog: function(val){
+      val || this.close();
     }
   },
 
   created() {
-    this.initialize();
     this.batches.sort(function(a, b) {
       return b - a;
     });
   },
 
+  mounted(){
+    this.$http.get('ambassadors?filter[hasGraduated]=false')
+      .then(response => {
+        this.ambassadors = response.data.ambassadors.map(ambassador => {
+          return this.transformAmbassadorData(ambassador);
+        });
+        this.loading = false;
+      })
+      .catch(error => {
+        const message = 'Loading failed. Please contact Tours Portfolio Head/EXCO/Platform Administrator';
+        this.snackbarFail = true;
+        this.snackbarText = message;
+        this.loadingText = message;
+        console.log(error);
+      })
+  },
+
   methods: {
-    initialize() {
-      this.ambassadors = [
-        {
-          ambassadorID: 123,
-          name: "Gabriel Koh Zhe Ming",
-          batch: 19,
-          year: 4,
-          primaryDegree: "SIS - IS(IS)",
-          secondaryDegree: "SOSS - SOSS",
-          nationality: "Singaporean",
-          race: "Chinese",
-          gender: "F",
-          currentAvailability: "Available",
-          unavailabilityReason: "N/A",
-          unavailabilityFrom: new Date().toISOString().substr(0, 10),
-          unavailabilityTo: new Date().toISOString().substr(0, 10),
-          mandarinProficiency: "Proficient",
-          leadershipStatus: "Cleared",
-          hasGraduated: "Graduated",
-          contact: 92367762,
-          email: "gabriel.koh.2016@smu.edu.sg"
-        },
-        {
-          ambassadorID: 4567,
-          name: "Louis Lui Yu Ze",
-          batch: 18,
-          year: 3,
-          primaryDegree: "LKSCB",
-          secondaryDegree: "N/A",
-          nationality: "Malaysian",
-          race: "Malay",
-          gender: "M",
-          currentAvailability: "Not Available",
-          unavailabilityReason: "LOA",
-          unavailabilityFrom: new Date().toISOString().substr(0, 10),
-          unavailabilityTo: new Date().toISOString().substr(0, 10),
-          mandarinProficiency: "Average",
-          leadershipStatus: "Not Cleared",
-          hasGraduated: "Not Graduated",
-          contact: 92367762,
-          email: "gabriel.koh.2016@smu.edu.sg"
-        },
-        {
-          ambassadorID: 452,
-          name: "Nigel Siew Something Something",
-          batch: 17,
-          year: 2,
-          primaryDegree: "LKSCB",
-          secondaryDegree: "SOA",
-          nationality: "Chinese",
-          race: "Chinese",
-          gender: "M",
-          currentAvailability: "Available",
-          unavailabilityReason: "N/A",
-          unavailabilityFrom: new Date().toISOString().substr(0, 10),
-          unavailabilityTo: new Date().toISOString().substr(0, 10),
-          mandarinProficiency: "Not Proficient",
-          leadershipStatus: "Not Cleared",
-          hasGraduated: "Not Graduated",
-          contact: 92367762,
-          email: "gabriel.koh.2016@smu.edu.sg"
-        }
-      ];
+    transformAmbassadorData(ambassador){
+      delete ambassador.createdAt
+      delete ambassador.eventCount
+      delete ambassador.tourCount
+      delete ambassador.updatedAt
+      delete ambassador.__v
+      ambassador['ambassadorID'] = ambassador._id
+      delete ambassador._id
+      ambassador['unavailabilityFrom'] = ambassador.unavailabilityFrom.substr(0,10)
+      ambassador['unavailabilityTo'] = ambassador.unavailabilityTo.substr(0,10)
+      return ambassador
     },
 
     editItem(item) {
+      this.index = this.ambassadors.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
     },
 
     deleteItem(item) {
-      const index = this.ambassadors.indexOf(item);
-      confirm("Are you sure you want to delete this ambassador?") &&
-        this.ambassadors.splice(index, 1);
+      this.snackbarDelete = true;
+      this.index = this.ambassadors.indexOf(item);
+      this.viewItem = Object.assign({}, item);
+    },
+
+    deleteAmbassador(){
+      this.$http.delete(`ambassadors/${this.viewItem.ambassadorID}`)
+        .then(response => {
+          this.ambassadors.splice(this.index,1);
+          this.snackbarText = response.data.message;
+          this.snackbarSuccess = true;
+        })
+        .catch(error => {
+          this.snackbarText = "Something went wrong. Please contact Tours Portfolio Head/EXCO/Administrator";
+          this.snackbarFail = true;
+          console.log(error);
+        })
+        .then(()=>{
+          this.snackbarDelete = false;
+          this.close();
+        });
     },
 
     getDetails(item) {
+      this.index = this.ambassadors.indexOf(item);
       this.viewItem = Object.assign({}, item);
       this.detailsDialog = true;
     },
 
     getUnavailablityDetails(item) {
+      this.index = this.ambassadors.indexOf(item);
       this.viewItem = Object.assign({}, item);
       this.unavailabilityDialog = true;
     },
@@ -327,6 +339,7 @@ export default {
       this.detailsDialog = false;
       this.unavailabilityDialog = false;
       setTimeout(() => {
+        this.index = null;
         this.editedItem = Object.assign({}, this.defaultItem);
         this.viewItem = Object.assign({}, this.defaultItem);
       }, 200);
@@ -336,17 +349,39 @@ export default {
       let editedItem = this.editedItem;
       let ambassadors = this.ambassadors;
       if (editedItem.ambassadorID !== 0) {
-        for (let i = 0; i < ambassadors.length; i++) {
-          let ambass = ambassadors[i];
-          if (ambass.ambassadorID === editedItem.ambassadorID) {
-            Object.assign(this.ambassadors[i], this.editedItem);
-          }
-        }
+        this.$http.put(`ambassadors/${editedItem.ambassadorID}`, editedItem)
+          .then(response => {
+            let ambassador = response.data.ambassador;
+            ambassador = this.transformAmbassadorData(ambassador);
+            Object.assign(ambassadors[this.index], ambassador);
+            this.snackbarText = response.data.message;
+            this.snackbarSuccess = true;
+          })
+          .catch(error => {
+            this.snackbarText = 'Something went wrong. Please contact Tours Portfolio Head/EXCO/Administrator';
+            this.snackbarFail = true;
+            console.log(error);
+          })
+          .then(() => {
+            this.close();
+          });
       } else {
-        editedItem.ambassadorID = Math.floor(Math.random() * Math.floor(100));
-        ambassadors.push(editedItem);
+        this.$http.post('ambassadors', editedItem)
+          .then(response => {
+            let ambassador = this.transformAmbassadorData(response.data.ambassador)
+            ambassadors.push(ambassador);
+            this.snackbarText = response.data.message;
+            this.snackbarSuccess = true;
+          })
+          .catch(error => {
+            this.snackbarText = 'Something went wrong. Please contact Tours Portfolio Head/EXCO/Administrator';
+            this.snackbarFail = true;
+            console.log(error);
+          })
+          .then(() => {
+            this.close();
+          });
       }
-      this.close();
     }
   }
 };
