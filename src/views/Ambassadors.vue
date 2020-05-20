@@ -38,12 +38,12 @@
                 />
               </v-dialog>
               <v-dialog v-model="detailsDialog" max-width="500px">
-                  <AmbassadorDetailsCard
-                    :ambassador="viewItem"
-                    :onClose="close"
-                    :unavailablityDetails="false"
-                  />
-                </v-dialog>
+                <AmbassadorDetailsCard
+                  :ambassador="viewItem"
+                  :onClose="close"
+                  :unavailablityDetails="false"
+                />
+              </v-dialog>
             </v-toolbar>
           </template>
           <template v-slot:item.name="{ item }">
@@ -145,13 +145,13 @@ export default {
   data: () => ({
     index: null,
     loading: "#151c55",
-    loadingText: "loading items...",
+    loadingText: "Loading items...",
     dialog: false,
     detailsDialog: false,
     unavailabilityDialog: false,
-    snackbarText: '',
+    snackbarText: "",
     snackbarSuccess: false,
-    snackbarFail : false,
+    snackbarFail: false,
     snackbarDelete: false,
     timeout: 2000,
     headers: [
@@ -189,7 +189,9 @@ export default {
       leadershipStatus: "",
       hasGraduated: "",
       contact: null,
-      email: ""
+      email: "",
+      tourCount: {},
+      eventCount: {}
     },
     defaultItem: {
       ambassadorID: 0,
@@ -209,7 +211,9 @@ export default {
       leadershipStatus: "",
       hasGraduated: "",
       contact: null,
-      email: ""
+      email: "",
+      tourCount: {},
+      eventCount: {}
     },
     viewItem: {
       ambassadorID: 0,
@@ -229,7 +233,9 @@ export default {
       leadershipStatus: "",
       hasGraduated: "",
       contact: null,
-      email: ""
+      email: "",
+      tourCount: {},
+      eventCount: {}
     }
   }),
 
@@ -250,7 +256,7 @@ export default {
       val || this.close();
     },
 
-    unavailabilityDialog: function(val){
+    unavailabilityDialog: function(val) {
       val || this.close();
     }
   },
@@ -261,8 +267,9 @@ export default {
     });
   },
 
-  mounted(){
-    this.$http.get('ambassadors?filter[hasGraduated]=false')
+  mounted() {
+    this.$http
+      .get("ambassadors?filter[hasGraduated]=false")
       .then(response => {
         this.ambassadors = response.data.ambassadors.map(ambassador => {
           return this.transformAmbassadorData(ambassador);
@@ -270,26 +277,33 @@ export default {
         this.loading = false;
       })
       .catch(error => {
-        const message = 'Loading failed. Please contact Tours Portfolio Head/EXCO/Platform Administrator';
+        const message =
+          "Loading failed. Please contact Tours Portfolio Head/EXCO/Platform Administrator.";
         this.snackbarFail = true;
         this.snackbarText = message;
         this.loadingText = message;
         console.log(error);
-      })
+      });
   },
 
   methods: {
-    transformAmbassadorData(ambassador){
-      delete ambassador.createdAt
-      delete ambassador.eventCount
-      delete ambassador.tourCount
-      delete ambassador.updatedAt
-      delete ambassador.__v
-      ambassador['ambassadorID'] = ambassador._id
-      delete ambassador._id
-      ambassador['unavailabilityFrom'] = ambassador.unavailabilityFrom.substr(0,10)
-      ambassador['unavailabilityTo'] = ambassador.unavailabilityTo.substr(0,10)
-      return ambassador
+    transformAmbassadorData(ambassador) {
+      delete ambassador.createdAt;
+      delete ambassador.eventCount;
+      delete ambassador.tourCount;
+      delete ambassador.updatedAt;
+      delete ambassador.__v;
+      ambassador["ambassadorID"] = ambassador._id;
+      delete ambassador._id;
+      ambassador["unavailabilityFrom"] = ambassador.unavailabilityFrom.substr(
+        0,
+        10
+      );
+      ambassador["unavailabilityTo"] = ambassador.unavailabilityTo.substr(
+        0,
+        10
+      );
+      return ambassador;
     },
 
     editItem(item) {
@@ -304,19 +318,21 @@ export default {
       this.viewItem = Object.assign({}, item);
     },
 
-    deleteAmbassador(){
-      this.$http.delete(`ambassadors/${this.viewItem.ambassadorID}`)
+    deleteAmbassador() {
+      this.$http
+        .delete(`ambassadors/${this.viewItem.ambassadorID}`)
         .then(response => {
-          this.ambassadors.splice(this.index,1);
+          this.ambassadors.splice(this.index, 1);
           this.snackbarText = response.data.message;
           this.snackbarSuccess = true;
         })
         .catch(error => {
-          this.snackbarText = "Something went wrong. Please contact Tours Portfolio Head/EXCO/Administrator";
+          this.snackbarText =
+            "Something went wrong. Please contact Tours Portfolio Head/EXCO/Administrator.";
           this.snackbarFail = true;
           console.log(error);
         })
-        .then(()=>{
+        .then(() => {
           this.snackbarDelete = false;
           this.close();
         });
@@ -349,7 +365,8 @@ export default {
       let editedItem = this.editedItem;
       let ambassadors = this.ambassadors;
       if (editedItem.ambassadorID !== 0) {
-        this.$http.put(`ambassadors/${editedItem.ambassadorID}`, editedItem)
+        this.$http
+          .put(`ambassadors/${editedItem.ambassadorID}`, editedItem)
           .then(response => {
             let ambassador = response.data.ambassador;
             ambassador = this.transformAmbassadorData(ambassador);
@@ -358,7 +375,8 @@ export default {
             this.snackbarSuccess = true;
           })
           .catch(error => {
-            this.snackbarText = 'Something went wrong. Please contact Tours Portfolio Head/EXCO/Administrator';
+            this.snackbarText =
+              "Something went wrong. Please contact Tours Portfolio Head/EXCO/Administrator.";
             this.snackbarFail = true;
             console.log(error);
           })
@@ -366,15 +384,19 @@ export default {
             this.close();
           });
       } else {
-        this.$http.post('ambassadors', editedItem)
+        this.$http
+          .post("ambassadors", editedItem)
           .then(response => {
-            let ambassador = this.transformAmbassadorData(response.data.ambassador)
+            let ambassador = this.transformAmbassadorData(
+              response.data.ambassador
+            );
             ambassadors.push(ambassador);
             this.snackbarText = response.data.message;
             this.snackbarSuccess = true;
           })
           .catch(error => {
-            this.snackbarText = 'Something went wrong. Please contact Tours Portfolio Head/EXCO/Administrator';
+            this.snackbarText =
+              "Something went wrong. Please contact Tours Portfolio Head/EXCO/Administrator.";
             this.snackbarFail = true;
             console.log(error);
           })

@@ -3,12 +3,28 @@ let Ambassador = require('../models/ambassador.model');
 
 // GET/ ambassadors
 router.route('/').get((request, response) => {
-    let filters = request.query.filter;
-    if(filters != null){
-        filters = {hasGraduated: filters.hasGraduated};
+    let params = request.query.filter;
+    let filters = {}
+    let attributesToIgnore = '';
+    if(params != null){
+        if(params.isMinimal === 'true'){
+            attributesToIgnore = '-__v -createdAt -updatedAt -primaryDegree \
+            -secondaryDegree -batch -nationality -race -year \
+            -unavailabilityReason -unavailabilityFrom -unavailabilityTo \
+            -mandarinProficiency -leadershipStatus -tourCount -eventCount \
+            -gender -hasGraduated -contact -email';
+        }
+
+        if(params.hasGraduated){
+            filters['hasGraduated'] = params.hasGraduated;
+        }
+        
+        if(params.currentAvailability){
+            filters['currentAvailability'] = params.currentAvailability;
+        }
     }
     
-    Ambassador.find(filters)
+    Ambassador.find(filters, attributesToIgnore)
         .then(ambassadors => response.status(200).json({
             "code":"SUCCESS",
             "ambassadors":ambassadors}))

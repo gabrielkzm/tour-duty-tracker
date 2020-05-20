@@ -122,6 +122,8 @@ export default {
       hasGraduated: '',
       contact: 0,
       email: '',
+      tourCount: {},
+      eventCount: {}
     },
     editedItem: {
       ambassadorID: 0,
@@ -142,6 +144,8 @@ export default {
       hasGraduated: '',
       contact: 0,
       email: '',
+      tourCount: {},
+      eventCount: {}
     },
     defaultItem: {
       ambassadorID: 0,
@@ -162,6 +166,8 @@ export default {
       hasGraduated: '',
       contact: 0,
       email: '',
+      tourCount: {},
+      eventCount: {}
     }
   }),
 
@@ -209,7 +215,7 @@ export default {
           this.graduatedAmbassadors.splice(this.index,1);
         })
         .catch(error => {
-          this.snackbarText = "Something went wrong. Please contact Tours Portfolio Head/EXCO/Administrator";
+          this.snackbarText = "Something went wrong. Please contact Tours Portfolio Head/EXCO/Administrator.";
           this.snackbarFail = true;
           console.log(error);
         })
@@ -240,7 +246,7 @@ export default {
           this.snackbarSuccess = true;
         })
         .catch(error => {
-          this.snackbarText = 'Something went wrong. Please contact Tours Portfolio Head/EXCO/Administrator';
+          this.snackbarText = 'Something went wrong. Please contact Tours Portfolio Head/EXCO/Administrator.';
           this.snackbarFail = true;
           console.log(error);
         })
