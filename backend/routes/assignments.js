@@ -1,99 +1,290 @@
 const router = require('express').Router();
-// let Ambassador = require('../models/ambassador.model');
+let Tour = require('../models/tour.model');
+let Semester = require('../models/semester.model');
+let Ambassador = require('../models/ambassador.model');
 
-// // GET/ ambassadors
-// router.route('/').get((_, response) => {
-//     Ambassador.find()
-//         .then(ambassadors => response.status(200).json(ambassadors))
-//         .catch(error => response.status(400).json(`Error: ${error}`));
-// });
+// POST/ assignments
+// Include tabulation of scores
+router.route('/').post(async (request, response) => {
+    const assignAutomatically = request.body.assignAutomatically
+    const tourID = request.body.tourID;
+    const selectedAmbassadors = request.body.selectedAmbassadors;
+    const ambassdorsHaveNotResponded = request.body.ambassdorsHaveNotResponded;
+    
+    try {
+        const tour = await Tour.findById(tourID)
+        if (!tour) {
+            throw new Error();
+        }
 
-// // GET/ ambassadors/{id}
-// router.route('/:id').get((request, response) => {
-//     Ambassador.findById(request.params.id)
-//         .then(ambassador => response.status(200).json(ambassador))
-//         .catch(error => response.status(400).json(`Error: ${error}`));
-// });
+        const isUrgent = tour.urgentTour
+        const endTime = new Date(tour.endTime);
+        const startTime = new Date(tour.startTime);
+        const hours = (endTime.getMinutes() - startTime.getMinutes()) / 60
 
-// // POST/ ambassadors
-// router.route('/').post((request, response) => {
-//     //TODO: to confirm details to take note
-//     const firstName = request.body.first_name;
-//     const lastName = request.body.last_name;
-//     const primaryDegree = request.body.primary_degree;
-//     const secondaryDegree = request.body.secondary_degree;
-//     const batch = request.body.batch;
-//     const nationality = request.body.nationality;
-//     const race = request.body.race;
-//     const year = request.body.year;
-//     const isAvailable = request.body.is_available;
-//     const unavailabilityReason = request.body.unavailability_reason;
-//     const unavailableFrom = request.body.unavailable_from;
-//     const unavailableTo = request.body.unavailable_to;
-//     const isChineseProficient = request.body.chinese_proficient;
-//     const hasClearedLeadership = request.body.has_cleared_leadership;
-//     const tourCount = 0;
-//     const events = 0;
+        const semester = await Semester.findOne({
+            startDate: {
+                $lte: tour.date,
+            },
+            endDate: {
+                $gte: tour.date
+            }
+        });
+        if (!semester) {
+            throw new Error();
+        }
 
-//     const ambassador = new Ambassador({
-//         firstName,
-//         lastName,
-//         primaryDegree,
-//         secondaryDegree,
-//         batch,
-//         nationality,
-//         race,
-//         year,
-//         isAvailable,
-//         unavailabilityReason,
-//         unavailableFrom,
-//         unavailableTo,
-//         isChineseProficient,
-//         hasClearedLeadership,
-//         tourCount,
-//         events
-//     });
+        const semesterID = semester._id.toString();
+        
+        let newAssignedAmbassadors = null;
+        if (tour.type === 'TOUR') {
+            newAssignedAmbassadors = assignAutomatically ? await addTourPointsAutoAssignment(semesterID, tour) : await addTourPointsManualAssignment(semesterID, tour, selectedAmbassadors)
+            if (!newAssignedAmbassadors) {
+                throw new Error();
+            }
+        } else {
+            newAssignedAmbassadors = assignAutomatically ? await addUEHoursAutoAssignment(semesterID, tour, hours): await addUEHoursManualAssignment(semesterID, tour, hours, selectedAmbassadors)
+            if (!newAssignedAmbassadors) {
+                throw new Error();
+            }
+        }
 
-//     ambassador.save()
-//         .then(()=> response.status(201).json(`Ambassador ${firstName} ${lastName} added successfully.`))
-//         .catch(error => response.status(400).json(`Error: ${error}`));
-// });
+        let deducted = deductTourPointsOrUEHours(semesterID, tour, newAssignedAmbassadors, hours)
+        if (!deducted) {
+            throw new Error();
+        }
 
-// // PUT/ ambassadors
-// router.route('/').put((request, response) => {
-//     Ambassador.findById(request.params.id)
-//         .then(ambassador => {
-//             ambassador.firstName = request.body.first_name;
-//             ambassador.lastName = request.body.last_name;
-//             ambassador.primaryDegree = request.body.primary_degree;
-//             ambassador.secondaryDegree = request.body.secondary_degree;
-//             ambassador.batch = request.body.batch;
-//             ambassador.nationality = request.body.nationality;
-//             ambassador.race = request.body.race;
-//             ambassador.year = request.body.year;
-//             ambassador.isAvailable = request.body.is_available;
-//             ambassador.unavailabilityReason = request.body.unavailability_reason;
-//             ambassador.unavailableFrom = request.body.unavailable_from;
-//             ambassador.unavailableTo = request.body.unavailable_to;
-//             ambassador.isChineseProficient = request.body.chinese_proficient;
-//             ambassador.hasClearedLeadership = request.body.has_cleared_leadership;
-//             ambassador.tourCount = 0;
-//             ambassador.events = 0;
-//             //TODO: check if there is proper status code for update
-//             ambassador.save()
-//                 .then(() => response.status(200).json(`Ambassador ${firstName} ${lastName} updated successfully.`))
-//                 .catch(error => response.status(400).json(`Error: ${error}`));
-//         })
-//         .catch(error => response.status(400).json(`Error: ${error}`));
-// });
+        if(!isUrgent){
+            tour.ambassadorsDeclinedWithoutReason = tour.ambassadorsDeclinedWithoutReason.concat(ambassdorsHaveNotResponded);
+        }
 
-// // DELETE/ ambassadors
-// router.route('/:id').delete((request, response) => {
-//     firstName = request.body.first_name;
-//     lastName = request.body.last_name;
-//     Ambassador.findByIdAndDelete(request.params.id)
-//         .then(() => response.status(200).json(`Ambassador ${firstName} ${lastName} has been deleted.`))
-//         .catch(error => response.status(400).json(`Error: ${error}`));
-// });
+        tour.assignedAmbassadors = newAssignedAmbassadors;
+        tour.ambassadorIC = newAssignedAmbassadors[0];
+        tour.status = "Assigned"
+        await tour.save();
+        response.status(200).json({
+            "code": "SUCCESS",
+            "message": `Tour: ${tour.name} has been assigned.`,
+            "tour": tour
+        })
+    } catch (error) {
+        response.status(400).json({
+            "code": "INVALID_INPUT",
+            "message": "Please contact Tours Portfolio Head/EXCO/Platform Administrator."
+        })
+    }
+});
+
+async function addUEHoursManualAssignment(semesterID, tour, hours, selectedAmbassadors) {
+    const oldAssignedAmbassadors = tour.assignedAmbassadors;
+
+    try {
+        let ambassadors = await Ambassador.find({
+            _id: {
+                $in: selectedAmbassadors
+            },
+        });
+
+        if (!ambassadors) {
+            throw new Error();
+        }
+
+        let newAssignedAmbassadors = []
+        ambassadors = ambassadors.map(ambassador => {
+            if (ambassador.eventCount.get(semesterID) == null) {
+                ambassador.eventCount.set(semesterID, 0);
+            }
+
+            newAssignedAmbassadors.push(ambassador._id.toString())
+            if (!oldAssignedAmbassadors.includes(ambassador._id.toString())) {
+                let eventCount = ambassador.eventCount;
+                eventCount.set(semesterID, eventCount.get(semesterID) + hours);
+                ambassador.eventCount = eventCount;
+                try {
+                    ambassador.save();
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+            
+            return ambassador;
+        })
+        return newAssignedAmbassadors
+    } catch (error) {
+        console.log(error)
+        return error;
+    }
+}
+
+async function addTourPointsManualAssignment(semesterID, tour, selectedAmbassadors) {
+    const oldAssignedAmbassadors = tour.assignedAmbassadors;
+
+    try {
+        let ambassadors = await Ambassador.find({
+            _id: {
+                $in: selectedAmbassadors
+            },
+        });
+
+        if (!ambassadors) {
+            throw new Error();
+        }
+
+        let newAssignedAmbassadors = []
+        ambassadors = ambassadors.map(ambassador => {
+            if (ambassador.tourCount.get(semesterID) == null) {
+                ambassador.tourCount.set(semesterID, 0);
+            }
+
+            newAssignedAmbassadors.push(ambassador._id.toString())
+            if (!oldAssignedAmbassadors.includes(ambassador._id.toString())) {
+                let tourCount = ambassador.tourCount;
+                tourCount.set(semesterID, tourCount.get(semesterID) + 1);
+                ambassador.tourCount = tourCount;
+                try {
+                    ambassador.save();
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+            
+            return ambassador;
+        })
+        return newAssignedAmbassadors
+    } catch (error) {
+        console.log(error)
+        return error;
+    }
+}
+
+async function addUEHoursAutoAssignment(semesterID, tour, hours) {
+    const ambassadorsAccepted = tour.ambassadorsAccepted;
+    const numberOfAmbassadorsRequired = tour.numberOfAmbassadorsRequired;
+    const oldAssignedAmbassadors = tour.assignedAmbassadors;
+
+    try {
+        let ambassadors = await Ambassador.find({
+            _id: {
+                $in: ambassadorsAccepted
+            },
+        });
+
+        if (!ambassadors) {
+            throw new Error();
+        }
+
+        ambassadors = ambassadors.map(ambassador => {
+            let eventCount = ambassador.eventCount;
+            if (eventCount.get(semesterID) == null) {
+                eventCount.set(semesterID, 0);
+            }
+            return ambassador;
+        })
+
+        ambassadors.sort((a, b) => a.eventCount.get(semesterID) - b.eventCount.get(semesterID));
+        let newAssignedAmbassadors = []
+        for (let i = 0; i < numberOfAmbassadorsRequired; i++) {
+            let ambassador = ambassadors[i];
+            newAssignedAmbassadors.push(ambassador._id.toString())
+            if (oldAssignedAmbassadors.includes(ambassador._id.toString())) {
+                continue;
+            }
+            let eventCount = ambassador.eventCount;
+            eventCount.set(semesterID, eventCount.get(semesterID) + hours);
+            ambassador.eventCount = eventCount;
+            try {
+                ambassador.save();
+            } catch (error) {
+                console.log(error);
+            }
+        }
+        return newAssignedAmbassadors
+    } catch (error) {
+        console.log(error)
+        return error;
+    }
+}
+
+async function addTourPointsAutoAssignment(semesterID, tour) {
+    const ambassadorsAccepted = tour.ambassadorsAccepted;
+    const numberOfAmbassadorsRequired = tour.numberOfAmbassadorsRequired;
+    const oldAssignedAmbassadors = tour.assignedAmbassadors;
+    try {
+        let ambassadors = await Ambassador.find({
+            _id: {
+                $in: ambassadorsAccepted
+            },
+        });
+
+        if (!ambassadors) {
+            throw new Error();
+        }
+
+        ambassadors = ambassadors.map(ambassador => {
+            let tourCount = ambassador.tourCount;
+            if (tourCount.get(semesterID) == null) {
+                tourCount.set(semesterID, 0);
+            }
+            return ambassador;
+        })
+
+        ambassadors.sort((a, b) => a.tourCount.get(semesterID) - b.tourCount.get(semesterID));
+        let newAssignedAmbassadors = []
+        for (let i = 0; i < numberOfAmbassadorsRequired; i++) {
+            let ambassador = ambassadors[i];
+            newAssignedAmbassadors.push(ambassador._id.toString())
+            if (oldAssignedAmbassadors.includes(ambassador._id.toString())) {
+                continue;
+            }
+            let tourCount = ambassador.tourCount;
+            tourCount.set(semesterID, tourCount.get(semesterID) + 1);
+            ambassador.tourCount = tourCount;
+            try {
+                ambassador.save();
+            } catch (error) {
+                console.log(error);
+            }
+        }
+        return newAssignedAmbassadors
+    } catch (error) {
+        console.log(error)
+        return error;
+    }
+}
+
+async function deductTourPointsOrUEHours(semesterID, tour, newAssignedAmbassadors, hours) {
+    const previouslyAssignedAmbassadors = tour.assignedAmbassadors;
+    try {
+        let ambassadors = await Ambassador.find({
+            _id: {
+                $in: previouslyAssignedAmbassadors
+            },
+        })
+
+        if (!ambassadors) {
+            throw new Error();
+        }
+
+        ambassadors.map(ambassador => {
+            if (!newAssignedAmbassadors.includes(ambassador._id.toString())) {
+                if(tour.type === "TOUR"){
+                    ambassador.tourCount.set(semesterID, ambassador.tourCount.get(semesterID) - 1);
+                }else{
+                    ambassador.eventCount.set(semesterID, ambassador.eventCount.get(semesterID) - hours);
+                }
+                
+                try {
+                    ambassador.save();
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+            return ambassador;
+        })
+    } catch (error) {
+        console.log(error);
+        return error;
+    }
+}
 
 module.exports = router;
