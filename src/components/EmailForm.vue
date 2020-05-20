@@ -8,7 +8,7 @@
     <v-card-text class="mt-2">
       <v-row dense>
         <v-col cols="6" flex>
-          Distribution List (To Ambassadors):
+          <span class="font-weight-bold">Distribution List (To Ambassadors):</span>
           <br />
           <li v-for="item in ambassadors" :key="item">{{item}}</li>
         </v-col>

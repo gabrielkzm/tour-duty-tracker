@@ -5,17 +5,19 @@
     </div>
     <v-divider />
     <v-card-text class="mt-2">
-      <v-row>
-        <v-col flex>Current Assigned Ambassador(s): {{tour.assignedAmbassadors.toString()}}</v-col>
-      </v-row>
       <v-row dense>
-        <v-col flex>Current Ambasador IC: {{tour.ambassadorIC}}</v-col>
+        <v-col flex><span class="font-weight-bold">Current Ambasador IC: </span>{{ambassadors[tour.ambassadorIC]["name"]}}</v-col>
+      </v-row>
+      <v-row>
+        <v-col flex><span class="font-weight-bold">Current Assigned Ambassador(s): </span>
+          <li v-for="item in tour.assignedAmbassadors" :key="item">{{ambassadors[item]["name"]}}</li>
+        </v-col>
       </v-row>
       <br />
       <v-divider></v-divider>
       <v-row dense>
         <v-col cols="12" flex>
-            Select Ambassadors for Assignment (Manual Only):
+            <span class="font-weight-bold">Select Ambassadors for Assignment (Manual Only):</span>
             <br />
             <v-select
               v-model="selectedAmbassadors"
@@ -26,12 +28,12 @@
               dense
               color="#151c55"
               multiple
-              :items="tour.ambassadorsAccepted"
+              :items="Object.keys(ambassadors).map(item => { return {'text': ambassadors[item]['name'], 'value': item} })"
             >
               <template v-slot:selection="{item, index}">
-                <span v-if="index === 0" class="mr-1">{{item}}</span>
-                <span v-if="index === 1" class="mr-1">, {{item}}</span>
-                <span v-if="index === 2" class="mr-1">, {{item}}</span>
+                <span v-if="index === 0" class="mr-1">{{item.text}}</span>
+                <span v-if="index === 1" class="mr-1">, {{item.text}}</span>
+                <span v-if="index === 2" class="mr-1">, {{item.text}}</span>
                 <span
                   v-if="index === 3"
                   class="grey--text caption"
@@ -64,9 +66,16 @@ export default {
 
   props: {
     tour: Object,
+    ambassadors: Object,
     onCancel: Function,
     onSubmitAutomatically: Function,
     onSubmitManually: Function
+  },
+
+  watch:{
+    tour: function(){
+      this.selectedAmbassadors = [];
+    }  
   },
 
   data() {

@@ -3,6 +3,8 @@
     <v-row>
       <v-col>
         <v-data-table
+          :loading="loading"
+          :loading-text="loadingText"
           :headers="headers"
           :items="tours"
           :footer-props="{
@@ -30,6 +32,42 @@
                   :newTour="newTour"
                 />
               </v-dialog>
+              <v-dialog v-model="detailsDialog" max-width="750px">
+                <TourDetailsCard :ambassadors="ambassadors" :tour="viewItem" :onClose="close" :generalDetails="true" :ambassadorsHaveNotResponded="ambassadorsHaveNotResponded" />
+              </v-dialog>
+              <v-dialog v-model="assignmentDialog" max-width="600px">
+                <TourDetailsCard :ambassadors="ambassadors" :tour="viewItem" :onClose="close" :assignmentDetails="true" :ambassadorsHaveNotResponded="ambassadorsHaveNotResponded" />
+              </v-dialog>
+              <v-dialog v-model="replyDialog" max-width="600px">
+                <TourDetailsCard :ambassadors="ambassadors" :tour="viewItem" :onClose="close" :replyDetails="true" :ambassadorsHaveNotResponded="ambassadorsHaveNotResponded"/>
+              </v-dialog>
+              <v-dialog v-model="emailAnnounceDialog" max-width="700px">
+                <EmailForm
+                  :onCancel="close"
+                  :onSubmit="emailCorps"
+                  :tour="viewItem"
+                  type="Announced"
+                  title="Broadcast Tour to Ambassadors | Initial Email to Office"
+                />
+              </v-dialog>
+              <v-dialog v-model="emailOfficeDialog" max-width="700px">
+                <EmailForm
+                  :onCancel="close"
+                  :onSubmit="emailOffice"
+                  :tour="viewItem"
+                  type="Assigned"
+                  title="Confirm Tour Assignment to Ambassadors | Confirmation Email to Office"
+                />
+              </v-dialog>
+              <v-dialog v-model="assignDialog" max-width="700px">
+                <AssignForm
+                  :ambassadors="ambassadors"
+                  :onCancel="close"
+                  :tour="viewItem"
+                  :onSubmitAutomatically="assignAmbassadorsAutomatically"
+                  :onSubmitManually="assignAmbassadorsManually"
+                />
+              </v-dialog>
             </v-toolbar>
           </template>
           <template v-slot:item.name="{ item }">
@@ -37,9 +75,9 @@
               <v-row>
                 <span class="mr-2">{{item.name}}</span>
                 <v-icon small class="mr-2" @click="getDetails(item)">mdi-open-in-new</v-icon>
-                <v-dialog v-model="detailsDialog" max-width="500px">
-                  <TourDetailsCard :tour="viewItem" :onClose="close" :generalDetails="true" />
-                </v-dialog>
+                <div v-if="item.urgentTour === true">
+                  <v-icon small class="mr-2">mdi-exclamation-thick</v-icon>
+                </div>
               </v-row>
             </v-container>
           </template>
@@ -53,9 +91,6 @@
               <v-chip color="error" dark x-small class="mr-2" @click="getAssignmentDetails(item)">
                 <v-icon x-small>mdi-close-circle</v-icon>
               </v-chip>
-              <v-dialog v-model="assignmentDialog" max-width="500px">
-                <TourDetailsCard :tour="viewItem" :onClose="close" :assignmentDetails="true" />
-              </v-dialog>
             </div>
           </template>
           <template v-slot:item.status="{ item }">
@@ -86,51 +121,55 @@
                 @click="getReplyDetails(item)"
               >{{item.status}}</v-chip>
             </div>
-            <div v-show="item.status === 'Completed'">
+            <div v-show="item.status === 'Confirmed' && isConducted(item.date)">
               <v-chip
                 color="success"
                 dark
                 x-small
                 class="mr-2 text-capitalize"
                 @click="getReplyDetails(item)"
+              >Completed</v-chip>
+            </div>
+            <div v-show="item.status === 'Confirmed' && !isConducted(item.date)">
+              <v-chip
+                color="cyan"
+                dark
+                x-small
+                class="mr-2 text-capitalize"
+                @click="getReplyDetails(item)"
               >{{item.status}}</v-chip>
             </div>
-            <v-dialog v-model="replyDialog" max-width="500px">
-              <TourDetailsCard :tour="viewItem" :onClose="close" :replyDetails="true" />
-            </v-dialog>
           </template>
           <template v-slot:item.actions="{ item }">
-            <v-icon small class="mr-2" @click="emailAnnounceItem(item)">mdi-email-send</v-icon>
-            <v-dialog v-model="emailAnnounceDialog" max-width="700px">
-              <EmailForm
-                :onCancel="close"
-                :onSubmit="emailCorps"
-                :tour="viewItem"
-                type="Announced"
-                title="Broadcast tour to ambassadors"
-              />
-            </v-dialog>
+            <v-icon 
+              v-show="item.status !== 'Assigned' && item.status !== 'Confirmed'"
+              small 
+              class="mr-2" 
+              @click="emailAnnounceItem(item)"
+            >mdi-email-send
+            </v-icon>
+            <v-icon 
+              v-show="item.status === 'Assigned' || item.status === 'Confirmed'"
+              small
+              disabled
+              class="mr-2" 
+              @click="emailAnnounceItem(item)"
+            >mdi-email-send
+            </v-icon>
             <v-icon
-              v-show="item.status === 'Announced' || item.status === 'Initiated'"
+              v-show="item.status === 'Announced' || item.status === 'Initiated' || item.status === 'Assigned'"
               small
               class="mr-2"
               @click="assignItem(item)"
             >mdi-clipboard-text</v-icon>
             <v-icon
-              v-show="item.status !== 'Announced' && item.status !== 'Initiated'"
+              v-show="item.status !== 'Announced' && item.status !== 'Initiated' && item.status !== 'Assigned'"
               disabled
               small
               class="mr-2"
               @click="assignItem(item)"
             >mdi-clipboard-text</v-icon>
-            <v-dialog v-model="assignDialog" max-width="700px">
-              <AssignForm
-                :onCancel="close"
-                :tour="viewItem"
-                :onSubmitAutomatically="assignAmbassadorsAutomatically"
-                :onSubmitManually="assignAmbassadorsManually"
-              />
-            </v-dialog>
+
             <v-icon
               v-show="item.status === 'Assigned'"
               small
@@ -144,21 +183,26 @@
               class="mr-2"
               @click="emailOfficeItem(item)"
             >mdi-email-check</v-icon>
-            <v-dialog v-model="emailOfficeDialog" max-width="700px">
-              <EmailForm
-                :onCancel="close"
-                :onSubmit="emailOffice"
-                :tour="viewItem"
-                type="Assigned"
-                title="Confirm tour assignment to ambassadors and office"
-              />
-            </v-dialog>
+
             <v-icon small class="mr-2" @click="editItem(item)">mdi-pencil</v-icon>
             <v-icon small @click="deleteItem(item)">mdi-delete</v-icon>
           </template>
         </v-data-table>
       </v-col>
     </v-row>
+    <v-snackbar color="success" :timeout="timeout" top v-model="snackbarSuccess">
+      {{snackbarText}}
+      <v-btn dark text @click="snackbarSuccess=false">Close</v-btn>
+    </v-snackbar>
+    <v-snackbar color="error" :timeout="timeout" top v-model="snackbarFail">
+      {{snackbarText}}
+      <v-btn dark text @click="snackbarFail=false">Close</v-btn>
+    </v-snackbar>
+    <v-snackbar color="warning" timeout="5000" right v-model="snackbarDelete">
+      <span>Are you sure you want to delete this ambassador?</span>
+      <v-btn dark text @click="deleteTour">Delete</v-btn>
+      <v-btn dark text @click="snackbarDelete=false">Close</v-btn>
+    </v-snackbar>
   </v-container>
 </template>
 
@@ -179,6 +223,16 @@ export default {
   },
 
   data: () => ({
+    today: new Date(),
+    index: null,
+    loading: "#151c55",
+    loadingText: "Loading items...",
+    snackbarText: "",
+    snackbarSuccess: false,
+    snackbarFail: false,
+    snackbarDelete: false,
+    timeout: 3000,
+    ambassadors: {},
     dialog: false,
     emailAnnounceDialog: false,
     emailOfficeDialog: false,
@@ -226,7 +280,8 @@ export default {
       officePhoneContact: "",
       officeEmailContact: "",
       officeLiaison: "",
-      status: ""
+      status: "",
+      urgentTour: "",
     },
     defaultItem: {
       tourID: 0,
@@ -253,7 +308,8 @@ export default {
       officePhoneContact: "",
       officeEmailContact: "",
       officeLiaison: "",
-      status: ""
+      status: "",
+      urgentTour: "",
     },
     viewItem: {
       tourID: 0,
@@ -280,7 +336,8 @@ export default {
       officePhoneContact: "",
       officeEmailContact: "",
       officeLiaison: "",
-      status: ""
+      status: "",
+      urgentTour: "",
     }
   }),
 
@@ -291,6 +348,20 @@ export default {
 
     newTour() {
       return this.editedItem.tourID === 0 ? true : false;
+    },
+
+    ambassadorsHaveNotResponded(){
+      let ambassadorsAccepted = this.viewItem.ambassadorsAccepted
+      let ambassadorsDeclinedWithoutReason = this.viewItem.ambassadorsDeclinedWithoutReason
+      let ambassadorsDeclinedWIthReason = this.viewItem.ambassadorsDeclinedWithReason
+      let result = []
+      for(let [key, value] of Object.entries(this.ambassadors)){
+        if(!ambassadorsAccepted.includes(key) && !ambassadorsDeclinedWithoutReason.includes(key) 
+          && !ambassadorsDeclinedWIthReason.includes(key) && value.currentAvailability && key !== '000000000000000000000000'){
+            result.push(key)
+        }
+      }
+      return result;
     }
   },
 
@@ -320,102 +391,59 @@ export default {
     }
   },
 
-  created() {
-    this.initialize();
+  created(){
+    this.$http.get('ambassadors?filter[hasGraduated]=false&filter[isMinimal]=true')
+      .then(response => {
+        response.data.ambassadors.forEach(ambassador => {
+          this.ambassadors[ambassador._id] = {"name": ambassador.name, "currentAvailability": ambassador.currentAvailability}
+        });
+        this.ambassadors['000000000000000000000000'] = {"name": 'N/A', "currentAvailability": false}
+      })
+      .catch(error => {
+        const message = 'Something went wrong, please contact Tours Portfolio Head/EXCO/Platform Administrator.';
+        this.snackbarText = message;
+        this.snackbarFail = true;
+        console.log(error);
+      })
+  },
+  
+  mounted() {
+    this.$http
+      .get("tours")
+      .then(response => {
+        this.tours = response.data.tours.map(tour => {
+          return this.transformTourData(tour);
+        });
+        this.loading = false;
+      })
+      .catch(error => {
+        const message =
+          "Loading failed. Please contact Tours Portfolio Head/EXCO/Platform Administrator.";
+        this.snackbarText = message;
+        this.snackbarFail = true;
+        this.loadingText = message;
+        console.log(error);
+      });
   },
 
   methods: {
-    initialize() {
-      this.tours = [
-        {
-          tourID: 9,
-          name: "Tour for Ngee Ann Polytechnic",
-          date: new Date().toISOString().substr(0, 10),
-          startTime: new Date().toTimeString().substr(0, 8),
-          endTime: new Date().toTimeString().substr(0, 8),
-          type: "TOUR",
-          numberOfGuests: 10,
-          numberOfAmbassadorsRequired: 1,
-          ambassadorsAccepted: ["Nigel", "Louis"],
-          ambassadorsDeclinedWithReason: ["Wei Hao"],
-          ambassadorsDeclinedWithoutReason: ["Gabriel"],
-          assignedAmbassadors: ["Nigel", "Louis"],
-          ambassadorIC: "Louis",
-          attire: "Polo T-Shirt",
-          purposeOfTour: ["Learning pedagogy"],
-          guestProfile: "Students",
-          checkPoints: ["Admin Building", "LKS Library", "Campus Green"],
-          startPoint: "Admin Building",
-          endPoint: "Admin Building",
-          remarks: "Be on time",
-          office: "IO",
-          officePhoneContact: "92367762",
-          officeEmailContact: "gabriel.koh.2016@smu.edu.sg",
-          officeLiaison: "John Doe",
-          status: "Initiated"
-        },
-        {
-          tourID: 2,
-          name: "Patron's Day",
-          date: new Date().toISOString().substr(0, 10),
-          startTime: new Date().toTimeString().substr(0, 8),
-          endTime: new Date().toTimeString().substr(0, 8),
-          type: "UE",
-          numberOfGuests: 100,
-          numberOfAmbassadorsRequired: 2,
-          ambassadorsAccepted: ["Wei Hao", "Gabriel", "Louis"],
-          ambassadorsDeclinedWithReason: ["Nigel"],
-          ambassadorsDeclinedWithoutReason: [],
-          assignedAmbassadors: ["N/A"],
-          ambassadorIC: "N/A",
-          attire: "Suit",
-          purposeOfTour: ["Partnerships", "Donor related"],
-          guestProfile: "Corporate",
-          checkPoints: ["Admin Building", "LKS Library", "T-Junction"],
-          startPoint: "Admin Building",
-          endPoint: "Admin Building",
-          remarks: "Some random remark",
-          office: "OUAFA",
-          officePhoneContact: "92367762",
-          officeEmailContact: "gabriel.koh.2016@smu.edu.sg",
-          officeLiaison: "John Doe",
-          status: "Initiated"
-        },
-        {
-          tourID: 3,
-          name: "Tour for RI",
-          date: new Date().toISOString().substr(0, 10),
-          startTime: new Date().toTimeString().substr(0, 8),
-          endTime: new Date().toTimeString().substr(0, 8),
-          type: "TOUR",
-          numberOfGuests: 30,
-          numberOfAmbassadorsRequired: 1,
-          ambassadorsAccepted: ["Nigel", "Wei Hao"],
-          ambassadorsDeclinedWithReason: ["Gabriel"],
-          ambassadorsDeclinedWithoutReason: ["Louis"],
-          assignedAmbassadors: ["N/A"],
-          ambassadorIC: "N/A",
-          attire: "Polo T-Shirt",
-          purposeOfTour: ["School facilities"],
-          guestProfile: "Students",
-          checkPoints: ["Admin Building", "LKS Library", "Campus Green"],
-          startPoint: "Admin Building",
-          endPoint: "Admin Building",
-          remarks: "Another random remark",
-          office: "OUAFA",
-          officePhoneContact: "92367762",
-          officeEmailContact: "gabriel.koh.2016@smu.edu.sg",
-          officeLiaison: "John Doe",
-          status: "Announced"
-        }
-      ];
+    transformTourData(tour) {
+      delete tour.createdAt;
+      delete tour.updatedAt;
+      delete tour.__v;
+      tour["tourID"] = tour._id;
+      delete tour._id;
+      tour["date"] = tour.date.substr(0, 10);
+      tour["startTime"] = tour.startTime.substr(11, 5);
+      tour["endTime"] = tour.endTime.substr(11, 5);
+      return tour;
     },
 
     emailOffice() {
       //TODO: to change this algo
       let tour = this.viewItem;
       let tours = this.tours;
-      tour.status = "Completed";
+      tour.status = "Confirmed";
       for (let i = 0; i < tours.length; i++) {
         let selectedTour = tours[i];
         if (selectedTour.tourID === tour.tourID) {
@@ -440,13 +468,15 @@ export default {
     },
 
     isAssigned(item) {
+      //TODO: check this out again
       let assignedAmbassadors = item.assignedAmbassadors;
       let ambassadorIC = item.ambassadorIC;
       if (
         assignedAmbassadors.length === 0 ||
-        assignedAmbassadors.includes("N/A") ||
+        assignedAmbassadors.includes("000000000000000000000000") ||
         ambassadorIC === null ||
-        ambassadorIC === ""
+        ambassadorIC === "" ||
+        ambassadorIC === '000000000000000000000000'
       ) {
         return false;
       } else {
@@ -455,86 +485,134 @@ export default {
     },
 
     emailAnnounceItem(item) {
+      this.index = this.tours.indexOf(item);
       this.viewItem = Object.assign({}, item);
       this.emailAnnounceDialog = true;
     },
 
     emailOfficeItem(item) {
+      this.index = this.tours.indexOf(item);
       this.viewItem = Object.assign({}, item);
       this.emailOfficeDialog = true;
     },
 
     assignItem(item) {
+      this.index = this.tours.indexOf(item);
       this.viewItem = Object.assign({}, item);
       this.assignDialog = true;
     },
 
     assignAmbassadorsAutomatically() {
-      //TODO: Change this algo
-      let tour = this.viewItem;
+      let viewItem = this.viewItem;
       let tours = this.tours;
-      let assignments = [];
-      if (tour.numberOfAmbassadorsRequired <= tour.ambassadorsAccepted.length) {
-        for (let i = 0; i < tour.numberOfAmbassadorsRequired; i++) {
-          assignments.push(tour.ambassadorsAccepted[i]);
-        }
-        tour.assignedAmbassadors = assignments;
-        tour.ambassadorIC = assignments[0];
-        tour.status = "Assigned";
-        for (let i = 0; i < tours.length; i++) {
-          let selectedTour = tours[i];
-          if (selectedTour.tourID === tour.tourID) {
-            Object.assign(tours[i], tour);
-          }
-        }
-        this.close();
-      } else {
-        this.close();
+      let endPointBody = {
+        "tourID": viewItem.tourID,
+        "assignAutomatically": true,
+        "ambassdorsHaveNotResponded": this.ambassadorsHaveNotResponded,
+      }
+
+      this.$http.post(`assignments`, endPointBody)
+        .then(response => {
+          let tour = response.data.tour
+          tour = this.transformTourData(tour);
+          Object.assign(tours[this.index], tour);
+          this.snackbarText = `${response.data.message} I/C: ${this.ambassadors[tour.ambassadorIC]["name"]}`
+          this.snackbarSuccess = true;
+        })
+        .catch(error => {
+            this.snackbarText = 'Something went wrong. Please contact Tours Portfolio Head/EXCO/Administrator.'
+            this.snackbarFail = true;
+            console.log(error);
+          })
+        .then(() => {
+          this.close();
+        });
+    },
+
+    isConducted(dateStr){
+      let date = new Date(dateStr)
+      if(date.getTime() < this.today){
+        return true
+      }else{
+        return false
       }
     },
 
     assignAmbassadorsManually(selectedAmbassadors) {
-      //TODO: Change this algo
-      let tour = this.viewItem;
+      let viewItem = this.viewItem;
       let tours = this.tours;
-      if (tour.numberOfAmbassadorsRequired <= tour.ambassadorsAccepted.length) {
-        tour.assignedAmbassadors = selectedAmbassadors;
-        tour.ambassadorIC = selectedAmbassadors[0];
-        tour.status = "Assigned";
-        for (let i = 0; i < tours.length; i++) {
-          let selectedTour = tours[i];
-          if (selectedTour.tourID === tour.tourID) {
-            Object.assign(tours[i], tour);
-          }
-        }
-        this.close();
-      } else {
-        this.close();
+      let endPointBody = {
+        "tourID": viewItem.tourID,
+        "assignAutomatically": false,
+        "selectedAmbassadors": selectedAmbassadors,
+        "ambassdorsHaveNotResponded": this.ambassadorsHaveNotResponded,
       }
+
+      this.$http.post(`assignments`, endPointBody)
+        .then(response => {
+          let tour = response.data.tour
+          tour = this.transformTourData(tour);
+          Object.assign(tours[this.index], tour);
+          this.snackbarText = `${response.data.message} I/C: ${this.ambassadors[tour.ambassadorIC]["name"]}`
+          this.snackbarSuccess = true;
+        })
+        .catch(error => {
+            this.snackbarText = 'Something went wrong. Please contact Tours Portfolio Head/EXCO/Administrator.'
+            this.snackbarFail = true;
+            console.log(error);
+          })
+        .then(() => {
+          this.close();
+        });
+      
     },
 
     editItem(item) {
+      this.index = this.tours.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
     },
 
     deleteItem(item) {
-      const index = this.tours.indexOf(item);
-      confirm("Are you sure you want to delete this tour?") &&
-        this.tours.splice(index, 1);
+      this.snackbarDelete = true;
+      this.index = this.tours.indexOf(item);
+      this.viewItem = Object.assign({}, item);
+    },
+
+    deleteTour() {
+      this.$http
+        .delete(`tours/${this.viewItem.tourID}`)
+        .then(response => {
+          this.tours.splice(this.index, 1);
+          this.snackbarText = response.data.message;
+          this.snackbarSuccess = true;
+        })
+        .catch(error => {
+          this.snackbarText =
+            "Something went wrong. Please contact Tours Portfolio Head/EXCO/Administrator.";
+          this.snackbarFail = true;
+          console.log(error);
+        })
+        .then(() => {
+          this.snackbarDelete = false;
+          this.close();
+        });
     },
 
     getDetails(item) {
+      this.index = this.tours.indexOf(item);
       this.viewItem = Object.assign({}, item);
       this.detailsDialog = true;
     },
 
     getAssignmentDetails(item) {
+      this.index = this.tours.indexOf(item);
       this.viewItem = Object.assign({}, item);
       this.assignmentDialog = true;
     },
 
     getReplyDetails(item) {
+      this.index = this.tours.indexOf(item);
       this.viewItem = Object.assign({}, item);
       this.replyDialog = true;
     },
@@ -548,6 +626,7 @@ export default {
       this.emailAnnounceDialog = false;
       this.assignDialog = false;
       setTimeout(() => {
+        this.index = null;
         this.editedItem = Object.assign({}, this.defaultItem);
         this.viewItem = Object.assign({}, this.defaultItem);
       }, 200);
@@ -557,17 +636,39 @@ export default {
       let editedItem = this.editedItem;
       let tours = this.tours;
       if (editedItem.tourID !== 0) {
-        for (let i = 0; i < tours.length; i++) {
-          let selectedTour = tours[i];
-          if (selectedTour.tourID === editedItem.tourID) {
-            Object.assign(this.tours[i], this.editedItem);
-          }
-        }
+        this.$http.put(`tours/${editedItem.tourID}`, editedItem)
+          .then(response => {
+            let tour = response.data.tour;
+            tour = this.transformTourData(tour);
+            Object.assign(tours[this.index], tour);
+            this.snackbarText = response.data.message;
+            this.snackbarSuccess = true;
+          })
+          .catch(error => {
+            this.snackbarText = 'Something went wrong. Please contact Tours Portfolio Head/EXCO/Administrator.'
+            this.snackbarFail = true;
+            console.log(error);
+          })
+          .then( () => {
+            this.close();
+          });
       } else {
-        editedItem.tourID = Math.floor(Math.random() * Math.floor(100));
-        tours.push(editedItem);
+        this.$http.post('tours', editedItem)
+          .then(response => {
+            let tour = this.transformTourData(response.data.tour);
+            tours.push(tour);
+            this.snackbarText = response.data.message;
+            this.snackbarSuccess = true;
+          })
+          .catch(error => {
+            this.snackbarText = 'Something went wrong. Please contact Tours Portfolio Head/EXCO/Administrator.';
+            this.snackbarFail = true;
+            console.log(error);
+          })
+          .then( () => {
+            this.close();
+          });
       }
-      this.close();
     }
   }
 };

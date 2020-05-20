@@ -221,7 +221,7 @@
           </v-col>
         </v-row>
         <v-row dense>
-          <v-col cols="12" md="4">
+          <v-col cols="12" md="3">
             <v-select
               v-model="tour.assignedAmbassadors"
               label="Assigned ambassador(s)"
@@ -243,7 +243,7 @@
               </template>
             </v-select>
           </v-col>
-          <v-col cols="12" md="4">
+          <v-col cols="12" md="3">
             <v-autocomplete
               v-model="tour.ambassadorIC"
               label="Ambassador IC"
@@ -254,7 +254,7 @@
               :items="ambassadors"
             ></v-autocomplete>
           </v-col>
-          <v-col cols="4">
+          <v-col cols="3">
             <v-text-field
               v-model="tour.remarks"
               label="Remarks"
@@ -263,6 +263,18 @@
               dense
               color="#151c55"
             ></v-text-field>
+          </v-col>
+          <v-col cols="12" md="3">
+            <v-autocomplete
+              v-model="tour.urgentTour"
+              label="Urgent Tour"
+              prepend-icon="mdi-exclamation"
+              name="urgentTour"
+              required
+              dense
+              color="#151c55"
+              :items="urgentTourSelection"
+            ></v-autocomplete>
           </v-col>
         </v-row>
         <v-row dense>
@@ -341,7 +353,7 @@ export default {
 
   data() {
     return {
-      statuses: ["Initiated", "Announced", "Assigned", "Completed"],
+      statuses: ["Initiated", "Announced", "Assigned"],
       tourTypes: ["TOUR", "UE"],
       purposeOfTour: [
         "Donor related",
@@ -382,6 +394,10 @@ export default {
         { "text": "Nigel", "value": "000000000000000000000003" },
         { "text": "John Doe", "value": "000000000000000000000004" },
         { "text": "N/A", "value": "000000000000000000000000" },
+      ],
+      urgentTourSelection:[
+        {"text": "Yes", "value": true},
+        {"text": "No", "value": false}
       ],
       offices: ["OUAFA", "IO", "SIS", "SOE", "SOSS", "SOA", "SOL", "LKCSB"],
       date: new Date().toISOString().substr(0, 10),
