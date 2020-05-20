@@ -54,7 +54,7 @@ router.route('/').post((request, response) => {
     let officeEmailContact = request.body.officeEmailContact;
     let officeLiaison = request.body.officeLiaison;
     let status = request.body.status;
-
+    let urgentTour = request.body.urgentTour;
 
     const tour = new Tour({
         name,
@@ -80,7 +80,8 @@ router.route('/').post((request, response) => {
         officePhoneContact,
         officeEmailContact,
         officeLiaison,
-        status
+        status,
+        urgentTour,
     });
 
     tour.save()
@@ -100,9 +101,10 @@ router.route('/:id').put((request, response) => {
     Tour.findById(request.params.id)
         .then(tour => {
             tour.name = request.body.name;
-            tour.date = request.body.date;
-            tour.startTime = request.body.startTime;
-            tour.endTime = request.body.endTime;
+            let date = request.body.date;
+            tour.date = date
+            tour.startTime = date + 'T' + request.body.startTime + ':00Z';
+            tour.endTime = date + 'T' + request.body.endTime + ':00Z';
             tour.type = request.body.type;
             tour.numberOfGuests = request.body.numberOfGuests;
             tour.numberOfAmbassadorsRequired = request.body.numberOfAmbassadorsRequired;
@@ -123,12 +125,13 @@ router.route('/:id').put((request, response) => {
             tour.officeEmailContact = request.body.officeEmailContact;
             tour.officeLiaison = request.body.officeLiaison;
             tour.status = request.body.status;
+            tour.urgentTour = request.body.urgentTour;
 
             tour.save()
                 .then(() => response.status(200).json({
                     "tour": tour,
                     "code": 'UPDATED',
-                    "message": `${tour.name} has been updated successfully.`
+                    "message": `Tour: ${tour.name} has been updated successfully.`
                 }))
                 .catch(error => response.status(400).json({
                     "code": "INVALID_INPUT",
@@ -143,10 +146,11 @@ router.route('/:id').put((request, response) => {
 
 // DELETE/ tours/1
 router.route('/:id').delete((request, response) => {
-    Tour.findByIdAndDelete(request.params.id)
+    const id = request.params.id
+    Tour.findByIdAndDelete(id)
         .then(() => response.status(200).json({
             "code": "DELETED",
-            "message": `Tour has been deleted.`
+            "message": `Tour ID: ${id} has been deleted.`
         }))
         .catch(error => response.status(400).json({
             "code": "INVALID_INPUT",
