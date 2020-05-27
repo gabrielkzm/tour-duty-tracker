@@ -1,29 +1,70 @@
 <template>
   <v-container cols="12" fluid>
-    <v-row dense>
-      <BiteSizeCard title="Tour King!" :value="tourKing" />
-      <BiteSizeCard title="Tour Queen!" :value="tourQueen" />
-      <BiteSizeCard title="Total Tours" :value="totalTours" />
-      <BiteSizeCard title="Active Ambassadors" :value="activeAmbassadors" />
+    <v-snackbar color="error" :timeout="timeout" top v-model="snackbarFail">
+      {{snackbarText}}
+      <v-btn dark text @click="snackbarFail=false">Close</v-btn>
+    </v-snackbar>
+    <v-row align="center" justify="center" fluid dense>
+      <v-col align="center" justify="center" fluid dense>
+        <v-card>
+          <span class="overline">
+            All info for period: {{period.semesterStartDate}} to {{period.semesterEndDate}}.
+            <p>If visualisation is marked with *, only current information is available</p>
+          </span>
+          <div class="ma-5">
+            <v-menu
+              v-model="menu"
+              :close-on-content-click="false"
+              transition="scale-transition"
+              offset-y
+              min-width="290px"
+            >
+              <template v-slot:activator="{ on }">
+                <v-text-field
+                  v-model="selectedDate"
+                  label="Select any date within desired semester"
+                  name="date"
+                  required
+                  v-on="on"
+                  dense
+                  color="#151c55"
+                ></v-text-field>
+              </template>
+              <v-date-picker
+                v-model="selectedDate"
+                show-current
+                no-title
+                scrollable
+                @input="menu = false"
+                color="#7a6c4b"
+              ></v-date-picker>
+            </v-menu>
+          </div>
+        </v-card>
+      </v-col>
     </v-row>
-    <span class="overline">Info for period: {{period.semesterStartDate}} to {{period.currentDate}}</span>
+    <v-row fluid class="ma-3">
+      <BiteSizeCard title="Tour King" :value="tourKing" />
+      <BiteSizeCard title="Tour Queen" :value="tourQueen" />
+      <BiteSizeCard title="Total Tours" :value="totalTours" />
+      <BiteSizeCard title="Active Ambassadors*" :value="activeAmbassadors" />
+    </v-row>
     <v-row fluid class="ma-3">
       <v-col cols="12" fluid>
         <v-card class="pa-2 mr-2">
           <div class="px-2 py-1 text-capitalize font-weight-medium">Tour Evaluations</div>
           <div class="ml-2 mt-2">
-            <v-autocomplete
-              :items="years"
-              dense
-              label="Year"
-              v-model="selectedYear"
-              @change="loadData"
-            ></v-autocomplete>
+            <span
+              class="overline"
+            >Evaluation scores are tabulated on semester basis, to tabulate on yearly basis, toggle between two semesters and aggregate manually.</span>
           </div>
           <v-divider></v-divider>
           <v-container fluid>
             <v-row fluid>
               <v-col fluid>
+                <v-dialog v-model="detailsDialog" max-width="500px">
+                  <TourEvaluationDetailsCard :tourEvaluationDetails="viewItem" :onClose="close" />
+                </v-dialog>
                 <v-data-table
                   loading-text="Loading..."
                   :headers="headers"
@@ -36,17 +77,14 @@
                 >
                   <template v-slot:item.details="{ item }">
                     <v-icon small class="mr-2" @click="getDetails(item)">mdi-open-in-new</v-icon>
-                    <v-dialog v-model="detailsDialog" max-width="500px">
-                      <TourEvaluationDetailsCard :tourEvaluationDetails="viewItem" :onClose="close" />
-                    </v-dialog>
                   </template>
                   <template v-slot:item.passOrFail="{ item }">
-                    <div v-show="item.passOrFail === 'pass'">
+                    <div v-show="item.passOrFail">
                       <v-chip color="success" dark x-small class="mr-2">
                         <v-icon x-small>mdi-check-circle</v-icon>
                       </v-chip>
                     </div>
-                    <div v-show="item.passOrFail === 'fail'">
+                    <div v-show="!item.passOrFail">
                       <v-chip color="error" dark x-small class="mr-2">
                         <v-icon x-small>mdi-close-circle</v-icon>
                       </v-chip>
@@ -100,7 +138,7 @@
     <v-row fluid class="ma-3" justify="center">
       <v-col md="4" fluid align="center">
         <v-card class="pa-2 mr-2">
-          <div class="mt-1 text-capitalize font-weight-medium" align="center">Tour Figures Trend</div>
+          <div class="mt-1 text-capitalize font-weight-medium" align="center">Tour Figures Trend*</div>
           <v-container>
             <LineChart :chartData="toursTrendData" :options="lineOptions"></LineChart>
           </v-container>
@@ -115,7 +153,7 @@ import BiteSizeCard from "@/components/BiteSizeCard";
 import BarChart from "@/components/BarChart";
 import PieChart from "@/components/PieChart";
 import LineChart from "@/components/LineChart";
-import TourEvaluationDetailsCard from '@/components/TourEvaluationDetailsCard';
+import TourEvaluationDetailsCard from "@/components/TourEvaluationDetailsCard";
 
 export default {
   name: "Statistics",
@@ -125,37 +163,37 @@ export default {
     BarChart,
     PieChart,
     LineChart,
-    TourEvaluationDetailsCard,
+    TourEvaluationDetailsCard
   },
 
   data: () => ({
+    snackbarFail: false,
+    snackbarText: "",
+    menu: false,
     detailsDialog: false,
     defaultItem: {
       name: "",
       numberOfTours: null,
       numberOfUEHours: null,
-      numberOfLOAAndExchange: null,
-      baseScore: null,
-      bonusScore: null,
-      deductions: null,
+      tourPoints: null,
+      replyPoints: null,
       passOrFail: "",
       finalScore: null,
       toursConducted: [],
-      toursDeductions: [],
+      tourDeductions: []
     },
     viewItem: {
       name: "",
       numberOfTours: null,
       numberOfUEHours: null,
-      numberOfLOAAndExchange: null,
-      baseScore: null,
-      bonusScore: null,
-      deductions: null,
+      tourPoints: null,
+      replyPoints: null,
       passOrFail: "",
       finalScore: null,
       toursConducted: [],
-      toursDeductions: [],
+      tourDeductions: []
     },
+
     headers: [
       {
         text: "Name",
@@ -166,57 +204,12 @@ export default {
       { text: "Details", value: "details" },
       { text: "Tour No.", value: "numberOfTours" },
       { text: "UE HRs.", value: "numberOfUEHours" },
-      { text: "LOA/ISEP", value: "numberOfLOAAndExchange" },
-      { text: "Base", value: "baseScore" },
-      { text: "Bonus", value: "bonusScore" },
-      { text: "Penalities", value: "deductions" },
+      { text: "Tour Pts", value: "tourPoints" },
+      { text: "Reply Pts", value: "replyPoints" },
       { text: "Pass?", value: "passOrFail" },
       { text: "Final Pts", value: "finalScore" }
     ],
-    // evaluationData: [],
-    evaluationData: [
-      {
-        name: "Gabriel Koh Zhe Ming",
-        numberOfTours: 10,
-        numberOfUEHours: 4,
-        numberOfLOAAndExchange: 0,
-        baseScore: 10,
-        bonusScore: 5,
-        deductions: 2,
-        passOrFail: "pass",
-        finalScore: 13,
-        toursConducted: ['Tour A', 'Tour B', 'Tour C'],
-        toursDeductions: ['Tour D', 'Tour E'],
-      },
-      {
-        name: "Louis Lui Yu Ze",
-        numberOfTours: 8,
-        numberOfUEHours: 2,
-        numberOfLOAAndExchange: 1,
-        baseScore: 8,
-        bonusScore: 5,
-        deductions: 1,
-        passOrFail: "pass",
-        finalScore: 12,
-        toursConducted: ['Tour B', 'Tour C', 'Tour D'],
-        toursDeductions: ['Tour A', 'Tour E'],
-      },
-      {
-        name: "Nigel Siew",
-        numberOfTours: 4,
-        numberOfUEHours: 2,
-        numberOfLOAAndExchange: 0,
-        baseScore: 5,
-        bonusScore: 0,
-        deductions: 3,
-        passOrFail: "fail",
-        finalScore: 2,
-        toursConducted: ['Tour D', 'Tour E', 'Tour C'],
-        toursDeductions: ['Tour A', 'Tour B'],
-      }
-    ],
-    years: ["2016", "2017", "2018", "2019", "2020"],
-    selectedYear: new Date().getFullYear(),
+    evaluationData: [],
     mandarinTourData: null,
     toursTrendData: null,
     evaluationPieData: null,
@@ -225,31 +218,114 @@ export default {
     barOptions: null,
     pieOptions: null,
     lineOptions: null,
-    tourKing: "Nigel",
-    tourQueen: "Bargavi",
-    totalTours: "100",
-    activeAmbassadors: "50/60",
+    tourKing: "",
+    tourQueen: "",
+    totalTours: "0",
+    activeAmbassadors: "",
     period: {
-      semesterStartDate: new Date().toISOString().substr(0, 10),
-      currentDate: new Date().toISOString().substr(0, 10)
-    }
+      semesterStartDate: null,
+      semesterEndDate: null
+    },
+    selectedDate: new Date().toISOString().substr(0,10)
   }),
 
   mounted() {
-    this.loadData(this.selectedYear);
-    this.fillEvaluationPieData();
-    this.fillOfficeData();
-    this.fillPurposeOfTourData();
-    this.fillMandarinTourData();
-    this.fillToursTrendData();
-    this.fillBarOptions();
-    this.fillPieOptions();
-    this.fillLineOptions();
+    this.loadData(new Date().toISOString().substr(0,10));
+  },
+
+  watch: {
+    selectedDate: function(){
+      this.loadData(this.selectedDate)
+    }
   },
 
   methods: {
-    loadData(year) {
-      return year;
+    loadData(date) {
+      this.$http
+        .get(`statistics/${date}`)
+        .then(response => {
+          let statistics = response.data.statistics;
+          this.period.semesterStartDate = statistics.startDate;
+          this.period.semesterEndDate = statistics.endDate;
+
+          let tourKingArr = statistics.tourKing.map(king => {
+            return `${king.name} (${king.count})`;
+          });
+          this.tourKing = tourKingArr.join(", ");
+
+          let tourQueenArr = statistics.tourQueen.map(queen => {
+            return `${queen.name} (${queen.count})`;
+          });
+          this.tourQueen = tourQueenArr.join(", ");
+          this.totalTours = statistics.tourCount;
+          this.activeAmbassadors = `${statistics.ambassadorAvailableCount}/${statistics.ambassadorCount}`;
+
+          this.fillMandarinTourData(
+            statistics.mandarinTourCount,
+            statistics.nonMandarinTourCount
+          );
+
+          let tourCountTrendLabel = [];
+          let tourCountTrendData = [];
+          statistics["toursGroupByYearCount"].map(tour => {
+            tourCountTrendLabel.push(tour._id);
+            tourCountTrendData.push(tour.count);
+          });
+          this.fillToursTrendData(tourCountTrendLabel, tourCountTrendData);
+
+          let tourOfficeLabel = [];
+          let tourOfficeData = [];
+          statistics["toursGroupByOfficeCount"].map(tour => {
+            tourOfficeLabel.push(tour._id);
+            tourOfficeData.push(tour.count);
+          });
+          this.fillOfficeData(tourOfficeLabel, tourOfficeData);
+
+          let tourPurposeLabel = [];
+          let tourPurposeData = [];
+          statistics["toursGroupByPurposeCount"].map(tour => {
+            tourPurposeLabel.push(tour._id);
+            tourPurposeData.push(tour.count);
+          });
+          this.fillPurposeOfTourData(tourPurposeLabel, tourPurposeData);
+
+          let numPass = 0;
+          let numFail = 0;
+          this.evaluationData = Object.keys(statistics.tourEvaluations).map(
+            key => {
+              let ambassador = statistics.tourEvaluations[key];
+              if (ambassador.pass) {
+                numPass += 1;
+              } else {
+                numFail += 1;
+              }
+
+              return {
+                name: ambassador.name,
+                numberOfTours: ambassador.toursConducted.length,
+                numberOfUEHours: ambassador.UEHours,
+                tourPoints: ambassador.tourPoints,
+                replyPoints: ambassador.replyPoints,
+                passOrFail: ambassador.pass,
+                finalScore: ambassador.finalPoints,
+                toursConducted: ambassador.toursConducted,
+                tourDeductions: ambassador.tourDeductions
+              };
+            }
+          );
+
+          this.fillEvaluationPieData(numPass, numFail);
+        })
+        .catch(error => {
+          console.log(error)
+          const message = error.response.data.message ? error.response.data.message : "Loading failed. Please contact Tours Portfolio Head/EXCO/Platform Administrator.";
+          this.snackbarFail = true;
+          this.snackbarText = message;
+          console.log(error);
+        });
+      this.fillBarOptions();
+      this.fillPieOptions();
+      this.fillLineOptions();
     },
 
     getDetails(item) {
@@ -264,89 +340,51 @@ export default {
       }, 200);
     },
 
-    fillEvaluationPieData() {
+    fillEvaluationPieData(passCount, failCount) {
       this.evaluationPieData = {
         labels: ["Pass", "Fail"],
         datasets: [
           {
             backgroundColor: ["#978c69", "#7a6c4b"],
-            data: [this.getRandomInt(), this.getRandomInt()]
+            data: [passCount, failCount]
           }
         ]
       };
     },
 
-    fillOfficeData() {
+    fillOfficeData(labels, data) {
       this.officeData = {
-        labels: [
-          "OUAFA",
-          "IO",
-          "OCCM",
-          "SIS",
-          "SOL",
-          "SOSS",
-          "SOA",
-          "SOB",
-          "SOE",
-          "OSL"
-        ],
+        labels: labels,
         datasets: [
           {
             label: "Number of Tours",
             backgroundColor: "#978c69",
-            data: [
-              this.getRandomInt(),
-              this.getRandomInt(),
-              this.getRandomInt(),
-              this.getRandomInt(),
-              this.getRandomInt(),
-              this.getRandomInt(),
-              this.getRandomInt(),
-              this.getRandomInt(),
-              this.getRandomInt(),
-              this.getRandomInt()
-            ]
+            data: data
           }
         ]
       };
     },
 
-    fillPurposeOfTourData() {
+    fillPurposeOfTourData(labels, data) {
       this.purposeOfTourData = {
-        labels: [
-          "Donor Related",
-          "Partnerships",
-          "School facilities",
-          "Ushering duty",
-          "Entrepreneurship",
-          "Learning pedagogy",
-          "Others"
-        ],
+        labels: labels,
         datasets: [
           {
             label: "Types of Tours",
             backgroundColor: "#978c69",
-            data: [
-              this.getRandomInt(),
-              this.getRandomInt(),
-              this.getRandomInt(),
-              this.getRandomInt(),
-              this.getRandomInt(),
-              this.getRandomInt(),
-              this.getRandomInt()
-            ]
+            data: data
           }
         ]
       };
     },
 
-    fillMandarinTourData() {
+    fillMandarinTourData(mandarinTourCount, nonMandarinTourCount) {
       this.mandarinTourData = {
         labels: ["Mandarin", "Non Mandarin"],
         datasets: [
           {
             backgroundColor: ["#978c69", "#7a6c4b"],
-            data: [this.getRandomInt(), this.getRandomInt()]
+            data: [mandarinTourCount, nonMandarinTourCount]
           }
         ]
       };
@@ -403,27 +441,17 @@ export default {
       };
     },
 
-    fillToursTrendData() {
+    fillToursTrendData(labels, data) {
       this.toursTrendData = {
-        labels: ["2016", "2017", "2018", "2019", "2020"],
+        labels: labels,
         datasets: [
           {
             label: "Number of Tours",
             backgroundColor: "#978c69",
-            data: [
-              this.getRandomInt(),
-              this.getRandomInt(),
-              this.getRandomInt(),
-              this.getRandomInt(),
-              this.getRandomInt()
-            ]
+            data: data
           }
         ]
       };
-    },
-
-    getRandomInt() {
-      return Math.floor(Math.random() * (50 - 5 + 1)) + 5;
     }
   }
 };

@@ -43,8 +43,11 @@
               </v-dialog>
               <v-dialog v-model="emailAnnounceDialog" max-width="700px">
                 <EmailForm
+                  :buttonDisable="buttonDisable"
+                  :ambassadors="ambassadors"
                   :onCancel="close"
-                  :onSubmit="emailCorps"
+                  :onSubmit="initialEmailToCorpsAndAmbassadors"
+                  :emails="[]"
                   :tour="viewItem"
                   type="Announced"
                   title="Broadcast Tour to Ambassadors | Initial Email to Office"
@@ -52,9 +55,12 @@
               </v-dialog>
               <v-dialog v-model="emailOfficeDialog" max-width="700px">
                 <EmailForm
+                  :buttonDisable="buttonDisable"
+                  :ambassadors="ambassadors"
                   :onCancel="close"
-                  :onSubmit="emailOffice"
+                  :onSubmit="confirmationEmailToCorpsAndAmbassadors"
                   :tour="viewItem"
+                  :emails="settings.additionalDistributionList"
                   type="Assigned"
                   title="Confirm Tour Assignment to Ambassadors | Confirmation Email to Office"
                 />
@@ -223,6 +229,9 @@ export default {
   },
 
   data: () => ({
+    days: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+    buttonDisable: false,
+    settings: {},
     today: new Date(),
     index: null,
     loading: "#151c55",
@@ -251,7 +260,6 @@ export default {
       { text: "End Time", value: "endTime" },
       { text: "Assigned?", value: "assignedAmbassadors" },
       { text: "Status", value: "status" },
-      // Email Initial, email confirm, assign
       { text: "Actions", value: "actions", sortable: false }
     ],
     tours: [],
@@ -282,6 +290,7 @@ export default {
       officeLiaison: "",
       status: "",
       urgentTour: "",
+      requireMandarin: "",
     },
     defaultItem: {
       tourID: 0,
@@ -310,6 +319,7 @@ export default {
       officeLiaison: "",
       status: "",
       urgentTour: "",
+      requireMandarin: "",
     },
     viewItem: {
       tourID: 0,
@@ -338,6 +348,7 @@ export default {
       officeLiaison: "",
       status: "",
       urgentTour: "",
+      requireMandarin: ""
     }
   }),
 
@@ -393,12 +404,29 @@ export default {
 
   created(){
     this.$http.get('ambassadors?filter[hasGraduated]=false&filter[isMinimal]=true')
-      .then(response => {
-        response.data.ambassadors.forEach(ambassador => {
-          this.ambassadors[ambassador._id] = {"name": ambassador.name, "currentAvailability": ambassador.currentAvailability}
-        });
-        this.ambassadors['000000000000000000000000'] = {"name": 'N/A', "currentAvailability": false}
-      })
+      .then(
+        response => {
+          response.data.ambassadors.forEach(ambassador => {
+            this.ambassadors[ambassador._id] = {"name": ambassador.name, 
+              "currentAvailability": ambassador.currentAvailability, "email": ambassador.email}
+          });
+          this.ambassadors["000000000000000000000000"] = {"name": "N/A", "currentAvailability": false, '"email"': "asdasd"}
+
+          this.$http.get('settings')
+            .then(response => {
+              let settingsTemp = response.data.settings[0];
+              settingsTemp['settingsID'] = settingsTemp._id;
+              delete settingsTemp._id;
+              this.settings = settingsTemp;
+            })
+            .catch(error => {
+              const message = 'Something went wrong, please contact Tours Portfolio Head/EXCO/Platform Administrator.';
+              this.snackbarText = message;
+              this.snackbarFail = true;
+              console.log(error);
+            });
+          
+        })
       .catch(error => {
         const message = 'Something went wrong, please contact Tours Portfolio Head/EXCO/Platform Administrator.';
         this.snackbarText = message;
@@ -439,36 +467,164 @@ export default {
       return tour;
     },
 
-    emailOffice() {
-      //TODO: to change this algo
+    confirmationEmailToCorpsAndAmbassadors(selectedAmbassadors) {
+      this.buttonDisable = true;
       let tour = this.viewItem;
       let tours = this.tours;
-      tour.status = "Confirmed";
-      for (let i = 0; i < tours.length; i++) {
-        let selectedTour = tours[i];
-        if (selectedTour.tourID === tour.tourID) {
-          Object.assign(tours[i], tour);
+      let ambassadors = this.ambassadors
+
+      let senderEmail = this.settings.tourAssignerEmail;
+      let assignedAmbassadors = tour.assignedAmbassadors.map(ambassador => 
+        { 
+          if(ambassadors[ambassador] != null){
+            return ambassadors[ambassador]["name"]
+          }else{
+            return '[Deleted Ambassador]'
+          }
+          
+        });
+      
+      
+      let ambassadorEmailRecipients = Object.keys(ambassadors).map(ambassadorID => {
+        if(ambassadorID !== '000000000000000000000000'){
+          return ambassadors[ambassadorID]["email"]
         }
+      })
+
+      let officeEmailContact = tour.officeEmailContact
+      let amabssadorICEmail = ambassadors[tour.ambassadorIC]["email"];
+      let officeEmailRecipients = [officeEmailContact, senderEmail, amabssadorICEmail]
+      officeEmailRecipients = officeEmailRecipients.concat(selectedAmbassadors)
+      
+      let ambassadorIC = '[Deleted Ambassador]';
+
+      if(ambassadors[tour.ambassadorIC]){
+        ambassadorIC = ambassadors[tour.ambassadorIC]["name"];
       }
-      this.close();
+
+      const requestBody = {
+        "emailType": "confirmationEmail",
+        "ambassadorEmailRecipients": ambassadorEmailRecipients,
+        "officeEmailRecipients": officeEmailRecipients,
+        "assignedAmbassadors": assignedAmbassadors,
+        "ambassadorIC": ambassadorIC,
+        "senderName": this.settings.tourAssignerName,
+        "senderContact": this.settings.tourAssignerContact,
+        "senderEmail": senderEmail,
+        "tour": tour,
+        "responseURL": null
+      }
+      
+      this.$http.post('emails', requestBody)
+          .then(response => {
+            tour.status = "Confirmed";
+            let message = response.data.message;
+            //
+            this.snackbarText = message
+            this.snackbarSuccess = true;
+            
+            this.$http.put(`tours/${tour.tourID}`, tour)
+              .then(response => {
+                let tour = response.data.tour;
+                tour = this.transformTourData(tour);
+                Object.assign(tours[this.index], tour);
+                this.snackbarText = message
+                this.snackbarSuccess = true;
+              })
+              .catch(error => {
+                this.snackbarText = 'Something went wrong. Please contact Tours Portfolio Head/EXCO/Administrator.'
+                this.snackbarFail = true;
+                console.log(error);
+              })
+              .then( () => {
+                this.buttonDisable = false;
+                this.close();
+              })
+          })
+          .catch(error => {
+            this.snackbarText = 'Something went wrong. Please contact Tours Portfolio Head/EXCO/Administrator.'
+            this.snackbarFail = true;
+            console.log(error);
+          })
+          .then( () => {
+            this.buttonDisable = false;
+            this.close();
+          });
     },
 
-    emailCorps() {
-      //TODO: to change this algo
+    initialEmailToCorpsAndAmbassadors() {
+      this.buttonDisable = true;
       let tour = this.viewItem;
       let tours = this.tours;
-      tour.status = "Announced";
-      for (let i = 0; i < tours.length; i++) {
-        let selectedTour = tours[i];
-        if (selectedTour.tourID === tour.tourID) {
-          Object.assign(tours[i], tour);
+      let ambassadors = this.ambassadors
+      let senderEmail = this.settings.tourAssignerEmail
+
+      let tourDate = new Date(tour.date)
+      let tourDateString = tourDate.toDateString()
+      let tourDateText = tourDateString.substr(tourDateString.indexOf(' ') + 1);
+      let tourDay = this.days[tourDate.getDay()]
+
+      let responseURL = location.origin + `/replyTour?name=${tour.name}&day=${tourDay}&date=${tourDateText}&startTime=${tour.startTime}&endTime=${tour.endTime}&tourID=${tour.tourID}`
+
+      let ambassadorEmailRecipients = Object.keys(ambassadors).map(ambassadorID => {
+        if(ambassadorID !== '000000000000000000000000'){
+          return ambassadors[ambassadorID]["email"]
         }
+      })
+      let officeEmailContact = tour.officeEmailContact
+      let officeEmailRecipients = [officeEmailContact, senderEmail]
+      
+  
+      const requestBody = {
+        "emailType": "initialEmail",
+        "ambassadorEmailRecipients": ambassadorEmailRecipients,
+        "officeEmailRecipients": officeEmailRecipients,
+        "assignedAmbassadors": null,
+        "ambassadorIC": null,
+        "senderName": this.settings.tourAssignerName,
+        "senderContact": this.settings.tourAssignerContact,
+        "senderEmail": senderEmail,
+        "tour": tour,
+        "responseURL": responseURL
       }
-      this.close();
+
+      this.$http.post('emails', requestBody)
+          .then(response => {
+            tour.status = "Announced";
+            let message = response.data.message;
+            this.snackbarText = message
+            this.snackbarSuccess = true;
+            
+            this.$http.put(`tours/${tour.tourID}`, tour)
+              .then(response => {
+                let tour = response.data.tour;
+                tour = this.transformTourData(tour);
+                Object.assign(tours[this.index], tour);
+                this.snackbarText = message
+                this.snackbarSuccess = true;
+              })
+              .catch(error => {
+                this.snackbarText = 'Something went wrong. Please contact Tours Portfolio Head/EXCO/Administrator.'
+                this.snackbarFail = true;
+                console.log(error);
+              })
+              .then( () => {
+                this.buttonDisable = false;
+                this.close();
+              })
+          })
+          .catch(error => {
+            this.snackbarText = 'Something went wrong. Please contact Tours Portfolio Head/EXCO/Administrator.'
+            this.snackbarFail = true;
+            console.log(error);
+          })
+          .then( () => {
+            this.buttonDisable = false;
+            this.close();
+          });
     },
 
     isAssigned(item) {
-      //TODO: check this out again
       let assignedAmbassadors = item.assignedAmbassadors;
       let ambassadorIC = item.ambassadorIC;
       if (

@@ -14,7 +14,7 @@ router.route('/').post(async (request, response) => {
     try {
         const tour = await Tour.findById(tourID)
         if (!tour) {
-            throw new Error();
+            throw new Error('Invalid Tour. Please contact Tours Portfolio Head/EXCO/Platform Administrator.');
         }
 
         const isUrgent = tour.urgentTour
@@ -31,7 +31,7 @@ router.route('/').post(async (request, response) => {
             }
         });
         if (!semester) {
-            throw new Error();
+            throw new Error('Invalid Semester. Please contact Tours Portfolio Head/EXCO/Platform Administrator.');
         }
 
         const semesterID = semester._id.toString();
@@ -40,18 +40,18 @@ router.route('/').post(async (request, response) => {
         if (tour.type === 'TOUR') {
             newAssignedAmbassadors = assignAutomatically ? await addTourPointsAutoAssignment(semesterID, tour) : await addTourPointsManualAssignment(semesterID, tour, selectedAmbassadors)
             if (!newAssignedAmbassadors) {
-                throw new Error();
+                throw new Error('Failed to assign ambassadors for Tour. Please contact Tours Portfolio Head/EXCO/Platform Administrator.');
             }
         } else {
             newAssignedAmbassadors = assignAutomatically ? await addUEHoursAutoAssignment(semesterID, tour, hours): await addUEHoursManualAssignment(semesterID, tour, hours, selectedAmbassadors)
             if (!newAssignedAmbassadors) {
-                throw new Error();
+                throw new Error('Failed to assign ambassadors for UE. Please contact Tours Portfolio Head/EXCO/Platform Administrator.');
             }
         }
 
         let deducted = deductTourPointsOrUEHours(semesterID, tour, newAssignedAmbassadors, hours)
         if (!deducted) {
-            throw new Error();
+            throw new Error('Failed to deduct points for Tour/UE. Please contact Tours Portfolio Head/EXCO/Platform Administrator.');
         }
 
         if(!isUrgent){
@@ -68,6 +68,7 @@ router.route('/').post(async (request, response) => {
             "tour": tour
         })
     } catch (error) {
+        console.log(error);
         response.status(400).json({
             "code": "INVALID_INPUT",
             "message": "Please contact Tours Portfolio Head/EXCO/Platform Administrator."
@@ -86,7 +87,7 @@ async function addUEHoursManualAssignment(semesterID, tour, hours, selectedAmbas
         });
 
         if (!ambassadors) {
-            throw new Error();
+            throw new Error('Invalid Ambassadors. Please contact Tours Portfolio Head/EXCO/Platform Administrator.');
         }
 
         let newAssignedAmbassadors = []
@@ -118,7 +119,7 @@ async function addUEHoursManualAssignment(semesterID, tour, hours, selectedAmbas
 
 async function addTourPointsManualAssignment(semesterID, tour, selectedAmbassadors) {
     const oldAssignedAmbassadors = tour.assignedAmbassadors;
-
+    
     try {
         let ambassadors = await Ambassador.find({
             _id: {
@@ -127,7 +128,7 @@ async function addTourPointsManualAssignment(semesterID, tour, selectedAmbassado
         });
 
         if (!ambassadors) {
-            throw new Error();
+            throw new Error('Invalid Ambassadors. Please contact Tours Portfolio Head/EXCO/Platform Administrator.');
         }
 
         let newAssignedAmbassadors = []
@@ -170,7 +171,7 @@ async function addUEHoursAutoAssignment(semesterID, tour, hours) {
         });
 
         if (!ambassadors) {
-            throw new Error();
+            throw new Error('Invalid Ambassadors. Please contact Tours Portfolio Head/EXCO/Platform Administrator.');
         }
 
         ambassadors = ambassadors.map(ambassador => {
@@ -217,7 +218,7 @@ async function addTourPointsAutoAssignment(semesterID, tour) {
         });
 
         if (!ambassadors) {
-            throw new Error();
+            throw new Error('Invalid Ambassadors. Please contact Tours Portfolio Head/EXCO/Platform Administrator.');
         }
 
         ambassadors = ambassadors.map(ambassador => {
@@ -262,7 +263,7 @@ async function deductTourPointsOrUEHours(semesterID, tour, newAssignedAmbassador
         })
 
         if (!ambassadors) {
-            throw new Error();
+            throw new Error('Invalid Ambassadors. Please contact Tours Portfolio Head/EXCO/Platform Administrator.');
         }
 
         ambassadors.map(ambassador => {
