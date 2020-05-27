@@ -11,7 +11,10 @@
               Accepted:
             </span>
             <div class="ml-5">
-              <li v-for="item in tour.ambassadorsAccepted" :key="item">{{ambassadors[item]["name"]}}</li>
+              <li v-for="item in tour.ambassadorsAccepted" :key="item">
+                <span v-if="ambassadors[item]" >{{ambassadors[item]["name"]}}</span>
+                <span v-else>[Deleted Ambassador]</span>
+              </li>
             </div>
           </v-col>
           <v-col md="6">
@@ -20,7 +23,10 @@
               Declined with reason:
             </span>
             <div class="ml-5">
-              <li v-for="item in tour.ambassadorsDeclinedWithReason" :key="item">{{ambassadors[item]["name"]}}</li>
+              <li v-for="item in tour.ambassadorsDeclinedWithReason" :key="item">
+                <span v-if="ambassadors[item]" >{{ambassadors[item]["name"]}}</span>
+                <span v-else>[Deleted Ambassador]</span>
+              </li>
             </div>
           </v-col>
         </v-row>
@@ -31,7 +37,10 @@
               Declined without reason / No Reason:
             </span>
             <div class="ml-5">
-              <li v-for="item in tour.ambassadorsDeclinedWithoutReason" :key="item">{{ambassadors[item]["name"]}}</li>
+              <li v-for="item in tour.ambassadorsDeclinedWithoutReason" :key="item">
+                <span v-if="ambassadors[item]" >{{ambassadors[item]["name"]}}</span>
+                <span v-else>[Deleted Ambassador]</span>
+              </li>
             </div>
           </v-col>
           <v-col md="6">
@@ -40,7 +49,10 @@
               Have not responded:
             </span>
             <div class="ml-5">
-              <li v-for="item in ambassadorsHaveNotResponded" :key="item">{{ambassadors[item]["name"]}}</li>
+              <li v-for="item in ambassadorsHaveNotResponded" :key="item">
+                <span v-if="ambassadors[item]" >{{ambassadors[item]["name"]}}</span>
+                <span v-else>[Deleted Ambassador]</span>
+              </li>
             </div>
           </v-col>
         </v-row>
@@ -51,12 +63,16 @@
               Assigned:
             </span>
             <div class="ml-5">
-              <li v-for="item in tour.assignedAmbassadors" :key="item">{{ambassadors[item]["name"]}}</li>
+              <li v-for="item in tour.assignedAmbassadors" :key="item">
+                <span v-if="ambassadors[item]" >{{ambassadors[item]["name"]}}</span>
+                <span v-else>[Deleted Ambassador]</span>
+              </li>
             </div>
           </v-col>
           <v-col md="6">
-            <span class="font-weight-bold"><v-icon small>mdi-account-star</v-icon> I/C:</span>
-            {{ambassadors[tour.ambassadorIC]["name"]}}
+            <span class="font-weight-bold"><v-icon small>mdi-account-star</v-icon> I/C: </span>
+            <span v-if="ambassadors[tour.ambassadorIC]">{{ambassadors[tour.ambassadorIC]["name"]}}</span>
+            <span v-else>[Deleted Ambassador]</span>
           </v-col>
         </v-row>
         <v-row v-show="generalDetails">
@@ -132,16 +148,26 @@
             {{tour.attire}}
           </v-col>
           <v-col md="6">
-            <span v-show="tour.urgentTour" class="font-weight-bold">
+            <span v-show="tour.urgentTour">
               <v-icon small>mdi-exclamation</v-icon>
-              Urgent Tour: 
+              <span class="font-weight-bold"> Urgent Tour: </span> Yes
             </span>
-            Yes
-            <span v-show="!tour.urgentTour" class="font-weight-bold">
+            <span v-show="!tour.urgentTour">
               <v-icon small>mdi-exclamation</v-icon>
-              Urgent Tour: 
+              <span class="font-weight-bold"> Urgent Tour: </span> No
             </span>
-            No
+          </v-col>
+        </v-row>
+        <v-row v-show="generalDetails">
+          <v-col md="12">
+            <span v-show="tour.requireMandarin">
+              <v-icon small>mdi-ideogram-cjk-variant</v-icon>
+              <span class="font-weight-bold"> Mandarin Tour: </span> Yes
+            </span>
+            <span v-show="!tour.requireMandarin">
+              <v-icon small>mdi-ideogram-cjk-variant</v-icon>
+              <span class="font-weight-bold"> Mandarin Tour: </span> No
+            </span>
           </v-col>
         </v-row>
         <v-row v-show="generalDetails">
@@ -159,7 +185,7 @@
               <v-icon small>mdi-map-marker-multiple</v-icon>
               Checkpoints: 
             </span>
-            {{tour.checkPoints.toString()}}
+            {{tour.checkPoints.join(', ')}}
           </v-col>
         </v-row>
         <v-row v-show="generalDetails">
@@ -168,7 +194,7 @@
               <v-icon small>mdi-information-variant</v-icon>
               Purpose: 
             </span>
-            {{tour.purposeOfTour.toString()}}
+            {{tour.purposeOfTour.join(', ')}}
           </v-col>
         </v-row>
         <v-row v-show="generalDetails">

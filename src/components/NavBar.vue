@@ -8,11 +8,11 @@
             alt="ASMU Logo"
             class="shrink mr-3"
             contain
-            src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
+            :src="require('../assets/asmu-logo-1.png')"
             transition="scale-transition"
-            width="20"
+            width="40"
           /></router-link>
-          <router-link to="/tours" tag="span" style="cursor:pointer"><h3 class="subtitle-1 font-weight-medium">ASMU TOURS SYSTEM</h3></router-link>
+          <router-link to="/tours" tag="span" style="cursor:pointer"><h3 class="subtitle-1 font-weight-medium">OPHELIA</h3></router-link>
         </div>
         <v-spacer></v-spacer>
         <v-menu offset-y v-if="hasUserOptions">
@@ -58,7 +58,8 @@ export default {
       options: [
         { icon: "mdi-lock-reset", text: "Change Password", route: 'changePassword'},
         { icon: "mdi-logout", text: "Log Out All", route: 'logoutAll'},
-        { icon: "mdi-logout-variant", text: "Log Out", route: 'logout'}
+        { icon: "mdi-logout-variant", text: "Log Out", route: 'logout'},
+        { icon: "mdi-cog-outline", text: "Settings", route: 'settings'}
       ],
       tabs: [
         { icon: "mdi-calendar-multiple", text: "Tours", route: 'tours'},

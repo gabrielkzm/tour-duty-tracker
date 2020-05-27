@@ -9,7 +9,8 @@
               <span><v-icon small>mdi-bullseye-arrow</v-icon> Final Score: {{tourEvaluationDetails.finalScore}}</span>
             </v-col>
             <v-col md="6">
-              <span class="text-capitalize"><v-icon small>mdi-clipboard-list-outline</v-icon> Pass/Fail: {{tourEvaluationDetails.passOrFail}}</span>
+              <span v-show="tourEvaluationDetails.passOrFail" class="text-capitalize"><v-icon small>mdi-clipboard-list-outline</v-icon> Pass/Fail: Pass</span>
+              <span v-show="!tourEvaluationDetails.passOrFail" class="text-capitalize"><v-icon small>mdi-clipboard-list-outline</v-icon> Pass/Fail: Fail</span>
             </v-col>
           </v-row>
           <v-row>
@@ -22,9 +23,9 @@
           </v-row>
           <v-row>
             <v-col md="12">
-              <span><v-icon small>mdi-calendar-remove-outline</v-icon> Deductions:</span>
+              <span><v-icon small>mdi-calendar-remove-outline</v-icon> Penalties (Declined Without Reason/No Reply):</span>
               <div class="ml-5">
-                <li v-for="item in tourEvaluationDetails.toursDeductions" :key="item">{{item}}</li>
+                <li v-for="item in tourEvaluationDetails.tourDeductions" :key="item">{{item}}</li>
               </div>
             </v-col>
           </v-row>

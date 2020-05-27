@@ -11,8 +11,8 @@ router.route('/').get((request, response) => {
             attributesToIgnore = '-__v -createdAt -updatedAt -primaryDegree \
             -secondaryDegree -batch -nationality -race -year \
             -unavailabilityReason -unavailabilityFrom -unavailabilityTo \
-            -mandarinProficiency -leadershipStatus -tourCount -eventCount \
-            -gender -hasGraduated -contact -email';
+            -mandarinProficiency -leadershipStatus -tourCount -eventCount\
+            -gender -hasGraduated -contact';
         }
 
         if(params.hasGraduated){
@@ -32,6 +32,28 @@ router.route('/').get((request, response) => {
             "code": "INALID_INPUT",
             "message": error}));
 });
+
+// GET/ ambassadors name(public)
+router.route('/names').get((_, response) => {
+    let filters = {
+        'hasGraduated': false,
+    }
+
+    let attributesToIgnore = '-__v -createdAt -updatedAt -primaryDegree \
+    -secondaryDegree -batch -nationality -race -year -currentAvailability \
+    -unavailabilityReason -unavailabilityFrom -unavailabilityTo \
+    -mandarinProficiency -leadershipStatus -tourCount -eventCount\
+    -gender -hasGraduated -contact -email -_id';
+    
+    Ambassador.find(filters, attributesToIgnore)
+        .then(ambassadors => response.status(200).json({
+            "code":"SUCCESS",
+            "ambassadors":ambassadors}))
+        .catch(error => response.status(400).json({
+            "code": "INALID_INPUT",
+            "message": error}));
+});
+
 
 // GET/ ambassadors/{id}
 router.route('/:id').get((request, response) => {

@@ -289,8 +289,6 @@ export default {
   methods: {
     transformAmbassadorData(ambassador) {
       delete ambassador.createdAt;
-      delete ambassador.eventCount;
-      delete ambassador.tourCount;
       delete ambassador.updatedAt;
       delete ambassador.__v;
       ambassador["ambassadorID"] = ambassador._id;

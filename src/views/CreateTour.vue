@@ -59,7 +59,8 @@ export default {
         officeEmailContact: null,
         officeLiaison: null,
         status: null,
-        urgentTour: null,
+        urgentTour: false,
+        requireMandarin: null,
       },
       defaultTour: {
         tourID: null,
@@ -87,7 +88,8 @@ export default {
         officeEmailContact: null,
         officeLiaison: null,
         status: null,
-        urgentTour: null,
+        urgentTour: false,
+        requireMandarin: null,
       },
       formTitle: "Create Tour"
     };

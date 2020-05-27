@@ -10,13 +10,14 @@
         <v-col cols="6" flex>
           <span class="font-weight-bold">Distribution List (To Ambassadors):</span>
           <br />
-          <li v-for="item in ambassadors" :key="item">{{item}}</li>
+          <li v-for="item in Object.keys(ambassadors)" :key="item">{{ambassadors[item]["name"]}}</li>
         </v-col>
         <v-col v-show="type === 'Assigned'" cols="6" flex>
-          Distribution List (To Office, Ambsassador IC):
+          <span class="font-weight-bold">Distribution List (To Office, Ambsassador IC):</span>
           <br />
           <li>{{tour.officeEmailContact}}</li>
-          <li>{{tour.ambassadorIC}}</li>
+          <span v-if="ambassadors[tour.ambassadorIC]"><li>{{ambassadors[tour.ambassadorIC]["name"]}}</li></span>
+          <span v-else><li>[Deleted Ambassador</li></span>
         </v-col>
       </v-row>
       <br />
@@ -52,7 +53,7 @@
       <br />
       <v-row flex>
         <v-form>
-          <v-btn color="#151c55" small dark class="ma-1" @click="onSubmit">
+          <v-btn :disabled="buttonDisable" color="#151c55" small class="ma-1 white--text" @click="onSubmit(selectedEmails)">
             <v-icon class="mr-1" small>mdi-email</v-icon>Email
           </v-btn>
           <v-btn color="error" small dark class="ma-1" @click="onCancel">
@@ -73,14 +74,15 @@ export default {
     type: String,
     onCancel: Function,
     onSubmit: Function,
-    title: String
+    title: String,
+    ambassadors: Object,
+    buttonDisable: Boolean,
+    emails: Array,
   },
 
   data() {
     return {
-      ambassadors: ["Nigel", "Louis", "Gabriel", "Wei Hao", "Others"],
       selectedEmails: [],
-      emails: ['gabriel.koh.2016@smu.edu.sg', 'gabriel.koh.2016@sis.smu.edu.sg'],
     };
   }
 };

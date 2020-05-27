@@ -50,7 +50,9 @@ export default {
         leadershipStatus: null,
         hasGraduated: null,
         contact: null,
-        email: null
+        email: null,
+        eventCount: {},
+        tourCount: {}
       },
 
       defaultAmbassador: {
@@ -71,7 +73,9 @@ export default {
         leadershipStatus: null,
         hasGraduated: null,
         contact: null,
-        email: null
+        email: null,
+        eventCount: {},
+        tourCount: {}
       },
 
       formTitle: "Create Ambassador"

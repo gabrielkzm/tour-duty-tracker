@@ -13,6 +13,8 @@ import ChangePassword from '@/views/ChangePassword'
 import GraduatedAmbassadors from '@/views/GraduatedAmbassadors';
 import Logout from '@/components/Logout';
 import LogoutAll from '@/components/LogoutAll';
+import Settings from "@/views/Settings";
+import ReplyTour from "@/views/ReplyTour";
 
 Vue.use(Router)
 
@@ -32,7 +34,9 @@ const routes = [
     ]
   },
   { path: '/login', name: 'LoginView', component: Login },
-  { path: '/ChangePassword', name: 'ChangePassword', component: ChangePassword},
+  { path: '/replyTour', name: 'ReplyTour', component: ReplyTour},
+  { path: '/changePassword', name: 'ChangePassword', component: ChangePassword},
+  { path: '/settings', name: 'Settings', component: Settings},
   { path: '/logout', name: 'logout', component: Logout},
   { path: '/logoutAll', name: 'logoutAll', component: LogoutAll},
   { path: '*', redirect: '/'}

@@ -1,5 +1,6 @@
 const router = require('express').Router();
 let Tour = require('../models/tour.model');
+let Ambassador = require('../models/ambassador.model');
 
 // GET/ tours
 router.route('/').get((_, response) => {
@@ -55,6 +56,7 @@ router.route('/').post((request, response) => {
     let officeLiaison = request.body.officeLiaison;
     let status = request.body.status;
     let urgentTour = request.body.urgentTour;
+    let requireMandarin = request.body.requireMandarin;
 
     const tour = new Tour({
         name,
@@ -82,6 +84,7 @@ router.route('/').post((request, response) => {
         officeLiaison,
         status,
         urgentTour,
+        requireMandarin,
     });
 
     tour.save()
@@ -126,6 +129,7 @@ router.route('/:id').put((request, response) => {
             tour.officeLiaison = request.body.officeLiaison;
             tour.status = request.body.status;
             tour.urgentTour = request.body.urgentTour;
+            tour.requireMandarin = request.body.requireMandarin;
 
             tour.save()
                 .then(() => response.status(200).json({
@@ -142,6 +146,129 @@ router.route('/:id').put((request, response) => {
             "code": "INVALID_INPUT",
             "message": error
         }));
+});
+
+//
+// PUT/ tours/replyTour/reject (public)
+router.route('/replyTour/reject').put(async (request, response) => {
+    try{
+        const declineReasons = ['Class', 'Appointment', 'Meeting', 'Overseas', 'Emergency', 'I am a liar.'];
+        const declineReason = request.body.declineReason
+        const ambassadorName = request.body.name
+        const pin = request.body.pin
+        const tourID = request.body.tourID
+
+        const ambassador = await Ambassador.findOne({name: ambassadorName})
+        
+
+        if(!declineReasons.includes(declineReason)){
+            throw new Error('Nice try...')
+        }
+        
+        if(!ambassador){
+            throw new Error('Invalid ambassador name. Please contact Tours Portfolio Head/Executive');
+        }
+        
+        const ambassadorID = ambassador._id.toString()
+        if(ambassadorID.substr(ambassadorID.length - 4) !== pin){
+            throw new Error('Invalid PIN entered, please try again.');
+        }
+
+        Tour.findById(tourID)
+            .then(tour => {
+                let index = tour.ambassadorsDeclinedWithoutReason.indexOf(ambassadorID)
+                if(index != -1){
+                    tour.ambassadorsDeclinedWithoutReason.splice(index, 1)
+                }
+
+                index = tour.ambassadorsAccepted.indexOf(ambassadorID)
+                if(index != -1){
+                    tour.ambassadorsAccepted.splice(index, 1)
+                }
+
+                if(!tour.ambassadorsDeclinedWithReason.includes(ambassadorID)){
+                    tour.ambassadorsDeclinedWithReason.push(ambassadorID)
+                }
+
+                tour.save()
+                .then(() => response.status(200).json({
+                    "code": 'UPDATED',
+                    "message": `${ambassadorName}, your reply has been recorded. RSVP: Rejected - valid reason.`
+                }))
+                .catch(() => response.status(500).json({
+                    "code": "INTERNAL_ERROR",
+                    "message": 'Something went wrong. Please contact Tours Portfolio Head/Executive.'
+                }));
+            })
+            .catch(() => response.status(400).json({
+                "code": "INVALID_INPUT",
+                "message": 'Tour ID is invalid. Please contact Tours Portfolio Head/Executive.'
+            }))
+    }catch(error){
+        console.log(error)
+        response.status(400).json({
+            "code": 'INVALID_INPUT',
+            "message": `${error.message}`
+        })
+    }
+});
+
+// PUT/ tours/replyTour/accept (public)
+router.route('/replyTour/accept').put(async (request, response) => {
+    try{
+        const ambassadorName = request.body.name
+        const pin = request.body.pin
+        const tourID = request.body.tourID
+
+        const ambassador = await Ambassador.findOne({name: ambassadorName})
+        
+        if(!ambassador){
+            throw new Error('Invalid ambassador name. Please contact Tours Portfolio Head/Executive');
+        }
+        
+        const ambassadorID = ambassador._id.toString()
+        
+        if(ambassadorID.substr(ambassadorID.length - 4) !== pin){
+            throw new Error('Invalid PIN entered, please try again.');
+        }
+
+        Tour.findById(tourID)
+            .then(tour => {
+                let index = tour.ambassadorsDeclinedWithoutReason.indexOf(ambassadorID)
+                if(index != -1){
+                    tour.ambassadorsDeclinedWithoutReason.splice(index, 1)
+                }
+
+                index = tour.ambassadorsDeclinedWithReason.indexOf(ambassadorID)
+                if(index != -1){
+                    tour.ambassadorsDeclinedWithReason.splice(index, 1)
+                }
+
+                if(!tour.ambassadorsAccepted.includes(ambassadorID)){
+                    tour.ambassadorsAccepted.push(ambassadorID)
+                }
+
+                tour.save()
+                .then(() => response.status(200).json({
+                    "code": 'UPDATED',
+                    "message": `${ambassadorName}, your reply has been recorded. RSVP: Accepted.`
+                }))
+                .catch(() => response.status(500).json({
+                    "code": "INTERNAL_ERROR",
+                    "message": 'Something went wrong. Please contact Tours Portfolio Head/Executive.'
+                }));
+            })
+            .catch(() => response.status(400).json({
+                "code": "INVALID_INPUT",
+                "message": 'Tour ID is invalid. Please contact Tours Portfolio Head/Executive.'
+            }))
+    }catch(error){
+        console.log(error)
+        response.status(400).json({
+            "code": 'INVALID_INPUT',
+            "message": `${error.message}`
+        })
+    }
 });
 
 // DELETE/ tours/1

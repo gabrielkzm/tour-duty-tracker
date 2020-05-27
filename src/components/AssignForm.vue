@@ -6,11 +6,18 @@
     <v-divider />
     <v-card-text class="mt-2">
       <v-row dense>
-        <v-col flex><span class="font-weight-bold">Current Ambasador IC: </span>{{ambassadors[tour.ambassadorIC]["name"]}}</v-col>
+        <v-col flex><span class="font-weight-bold">Current Ambasador IC: </span>
+          <span v-if="ambassadors[tour.ambassadorIC]" >{{ambassadors[tour.ambassadorIC]["name"]}}</span>
+          <span v-else>[Deleted Ambassador]</span>
+        </v-col>
+        
       </v-row>
       <v-row>
         <v-col flex><span class="font-weight-bold">Current Assigned Ambassador(s): </span>
-          <li v-for="item in tour.assignedAmbassadors" :key="item">{{ambassadors[item]["name"]}}</li>
+          <li v-for="item in tour.assignedAmbassadors" :key="item">
+            <span v-if="ambassadors[item]">{{ambassadors[item]["name"]}}</span>
+            <span v-else>[Deleted Ambassador]</span>
+          </li>
         </v-col>
       </v-row>
       <br />

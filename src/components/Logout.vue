@@ -3,7 +3,7 @@
     <v-row align="center" justify="center">
       <v-col cols="12" fluid>
         <v-img
-          :src="require('../assets/logo.svg')"
+          :src="require('../assets/asmu-logo-1.png')"
           class="my-3"
           contain
           height="200"

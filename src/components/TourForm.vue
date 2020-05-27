@@ -174,7 +174,19 @@
           </v-col>
         </v-row>
         <v-row dense>
-          <v-col cols="12" md="4">
+          <v-col cols="12" md="3">
+            <v-autocomplete
+              v-model="tour.requireMandarin"
+              label="Mandarin Tour"
+              prepend-icon="mdi-ideogram-cjk-variant"
+              name="requireMandarin"
+              required
+              dense
+              color="#151c55"
+              :items="requireMandarinSelection"
+            ></v-autocomplete>
+          </v-col>
+          <v-col cols="12" md="3">
             <v-select
               v-model="tour.checkPoints"
               label="Checkpoint(s)"
@@ -195,7 +207,7 @@
               </template>
             </v-select>
           </v-col>
-          <v-col cols="12" md="4">
+          <v-col cols="12" md="3">
             <v-combobox
               v-model="tour.startPoint"
               label="Start location"
@@ -207,7 +219,7 @@
               color="#151c55"
             ></v-combobox>
           </v-col>
-          <v-col cols="12" md="4">
+          <v-col cols="12" md="3">
             <v-combobox
               v-model="tour.endPoint"
               :items="checkpoints"
@@ -353,7 +365,7 @@ export default {
 
   data() {
     return {
-      statuses: ["Initiated", "Announced", "Assigned"],
+      statuses: ["Initiated", "Announced", "Assigned", "Confirmed"],
       tourTypes: ["TOUR", "UE"],
       purposeOfTour: [
         "Donor related",
@@ -396,6 +408,10 @@ export default {
         { "text": "N/A", "value": "000000000000000000000000" },
       ],
       urgentTourSelection:[
+        {"text": "Yes", "value": true},
+        {"text": "No", "value": false}
+      ],
+      requireMandarinSelection:[
         {"text": "Yes", "value": true},
         {"text": "No", "value": false}
       ],
