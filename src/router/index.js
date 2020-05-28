@@ -48,11 +48,11 @@ const router = new Router({
 })
 
 router.beforeEach((to, from, next) => {
-  const publicPaths = ['/login']
+  const publicPaths = ['/login','/replyTour']
   const isAuthRequiredPaths = !publicPaths.includes(to.path);
-  const isLoggedIn = true;
-  // const user = localStorage.getItem('user');
-  // const isLoggedIn = user !== null ? true : false;
+  // const isLoggedIn = true;
+  const user = localStorage.getItem('user');
+  const isLoggedIn = user !== null ? true : false;
   // TODO: Uncomment when done
   if(isAuthRequiredPaths && !isLoggedIn){
     return next('/login');
