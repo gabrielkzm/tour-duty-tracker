@@ -52,10 +52,10 @@
       <br />
       <v-row flex>
         <v-form>
-          <v-btn color="#151c55" small dark class="ma-1" @click="onSubmitManually(selectedAmbassadors)">
+          <v-btn :disabled="buttonDisable" color="#151c55" small class="ma-1 white--text" @click="onSubmitManually(selectedAmbassadors)">
             <v-icon class="mr-1" small>mdi-pencil-plus</v-icon>Assign Manually
           </v-btn>
-          <v-btn v-show="tour.numberOfAmbassadorsRequired <= tour.ambassadorsAccepted.length" color="#151c55" small dark class="ma-1" @click="onSubmitAutomatically">
+          <v-btn :disabled="buttonDisable" v-show="tour.numberOfAmbassadorsRequired <= tour.ambassadorsAccepted.length" color="#151c55" small class="ma-1 white--text" @click="onSubmitAutomatically">
             <v-icon class="mr-1" small>mdi-pencil-plus</v-icon>Assign Automatically
           </v-btn>
           <v-btn color="error" small dark class="ma-1" @click="onCancel">
@@ -76,7 +76,8 @@ export default {
     ambassadors: Object,
     onCancel: Function,
     onSubmitAutomatically: Function,
-    onSubmitManually: Function
+    onSubmitManually: Function,
+    buttonDisable: Boolean,
   },
 
   watch:{

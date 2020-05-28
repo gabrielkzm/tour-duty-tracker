@@ -21,6 +21,7 @@
               <v-spacer></v-spacer>
               <v-dialog v-model="dialog" max-width="1000px">
                 <AmbassadorForm
+                  :buttonDisable="buttonDisable"
                   :ambassador="editedItem"
                   :onCancel="close" 
                   :onSubmit="save"
@@ -80,6 +81,7 @@ export default {
   },
 
   data: () => ({
+    buttonDisable: false,
     index: null,
     loading: '#151c55',
     loadingText: 'Loading items...',
@@ -105,67 +107,67 @@ export default {
     graduatedAmbassadors: [],
     viewItem: {
       ambassadorID: 0,
-      name: "",
+      name: null,
       batch: null,
       year: null,
-      primaryDegree: "",
-      secondaryDegree: "",
-      nationality: "",
-      race:"",
-      gender:"",
-      currentAvailability: '',
-      unavailabilityReason: '',
+      primaryDegree: null,
+      secondaryDegree: null,
+      nationality: null,
+      race: null,
+      gender: null,
+      currentAvailability: null,
+      unavailabilityReason: null,
       unavailabilityFrom: new Date().toISOString().substr(0, 10),
       unavailabilityTo: new Date().toISOString().substr(0, 10),
-      mandarinProficiency: '',
-      leadershipStatus: '',
-      hasGraduated: '',
-      contact: 0,
-      email: '',
+      mandarinProficiency: null,
+      leadershipStatus: null,
+      hasGraduated: null,
+      contact: null,
+      email: null,
       tourCount: {},
       eventCount: {}
     },
     editedItem: {
       ambassadorID: 0,
-      name: "",
+      name: null,
       batch: null,
       year: null,
-      primaryDegree: "",
-      secondaryDegree: "",
-      nationality: "",
-      race:"",
-      gender:"",
-      currentAvailability: '',
-      unavailabilityReason: '',
+      primaryDegree: null,
+      secondaryDegree: null,
+      nationality: null,
+      race: null,
+      gender: null,
+      currentAvailability: null,
+      unavailabilityReason: null,
       unavailabilityFrom: new Date().toISOString().substr(0, 10),
       unavailabilityTo: new Date().toISOString().substr(0, 10),
-      mandarinProficiency: '',
-      leadershipStatus: '',
-      hasGraduated: '',
-      contact: 0,
-      email: '',
+      mandarinProficiency: null,
+      leadershipStatus: null,
+      hasGraduated: null,
+      contact: null,
+      email: null,
       tourCount: {},
       eventCount: {}
     },
     defaultItem: {
       ambassadorID: 0,
-      name: "",
+      name: null,
       batch: null,
       year: null,
-      primaryDegree: "",
-      secondaryDegree: "",
-      nationality: "",
-      race:"",
-      gender:"",
-      currentAvailability: '',
-      unavailabilityReason: '',
+      primaryDegree: null,
+      secondaryDegree: null,
+      nationality: null,
+      race: null,
+      gender: null,
+      currentAvailability: null,
+      unavailabilityReason: null,
       unavailabilityFrom: new Date().toISOString().substr(0, 10),
       unavailabilityTo: new Date().toISOString().substr(0, 10),
-      mandarinProficiency: '',
-      leadershipStatus: '',
-      hasGraduated: '',
-      contact: 0,
-      email: '',
+      mandarinProficiency: null,
+      leadershipStatus: null,
+      hasGraduated: null,
+      contact: null,
+      email: null,
       tourCount: {},
       eventCount: {}
     }
@@ -206,6 +208,7 @@ export default {
     },
 
     deleteAmbassador(){
+      this.buttonDisable = true;
       this.$http.delete(`ambassadors/${this.viewItem.ambassadorID}`)
         .then(response => {
           this.snackbarText = response.data.message;
@@ -219,6 +222,7 @@ export default {
         })
         .then(()=>{
           this.snackbarDelete = false;
+          this.buttonDisable = false;
           this.close();
         });
     },
@@ -233,6 +237,7 @@ export default {
     },
 
     save() {
+      this.buttonDisable = true;
       let editedItem = this.editedItem;
       let graduatedAmbassadors = this.graduatedAmbassadors;
       this.$http.put(`ambassadors/${editedItem.ambassadorID}`, editedItem)
@@ -249,6 +254,7 @@ export default {
           console.log(error);
         })
         .then(() => {
+          this.buttonDisable = false;
           this.close();
         });
     }

@@ -3,12 +3,14 @@
     <v-row align="center" justify="center">
       <v-col cols="12">
         <TourForm
+          :buttonDisable="buttonDisable"
           :formTitle="formTitle"
           :tour="tour"
           :newTour="true"
           :onSubmitAndEmail="handleSubmitAndEmail"
           :onCancel="handleCancel"
           :onSubmit="handleSubmit"
+          :ambassadors="ambassadors"
         />
       </v-col>
     </v-row>
@@ -27,8 +29,28 @@ export default {
     TourForm
   },
 
+  created(){
+    this.$http.get('ambassadors?filter[hasGraduated]=false&filter[isMinimal]=true')
+      .then(
+        response => {
+          this.ambassadors = response.data.ambassadors.map(ambassador => {
+            return {"text": ambassador.name, "value": ambassador._id}
+          });
+          this.ambassadors.push({"text": "N/A", 'value': "000000000000000000000000"})
+          
+        })
+      .catch(error => {
+        const message = 'Something went wrong, please contact Tours Portfolio Head/EXCO/Platform Administrator.';
+        this.snackbarText = message;
+        this.snackbarFail = true;
+        console.log(error);
+      })
+  },
+
   data() {
     return {
+      buttonDisable: false,
+      ambassadors: [],
       snackbarSuccess: false,
       snackbarFail: false,
       snackbarText: "",
@@ -39,7 +61,7 @@ export default {
         date: null,
         startTime: null,
         endTime: null,
-        type: null,
+        type: "TOUR",
         numberOfGuests: null,
         numberOfAmbassadorsRequired: null,
         ambassadorsAccepted: [],
@@ -58,9 +80,9 @@ export default {
         officePhoneContact: null,
         officeEmailContact: null,
         officeLiaison: null,
-        status: null,
+        status: "Initiated",
         urgentTour: false,
-        requireMandarin: null,
+        requireMandarin: false,
       },
       defaultTour: {
         tourID: null,
@@ -68,7 +90,7 @@ export default {
         date: null,
         startTime: null,
         endTime: null,
-        type: null,
+        type: "TOUR",
         numberOfGuests: null,
         numberOfAmbassadorsRequired: null,
         ambassadorsAccepted: [],
@@ -89,7 +111,7 @@ export default {
         officeLiaison: null,
         status: null,
         urgentTour: false,
-        requireMandarin: null,
+        requireMandarin: false,
       },
       formTitle: "Create Tour"
     };
@@ -101,8 +123,8 @@ export default {
       alert("handle submit and email");
     },
 
-    handleSubmit(e) {
-      e.preventDefault();
+    handleSubmit() {
+      this.buttonDisable = true;
       this.$http.post('tours', this.tour)
       .then(response => {
         this.snackbarText = response.data.message;
@@ -114,6 +136,9 @@ export default {
         this.snackbarFail = true;
         console.log(error);
       })
+      .then( () => {
+        this.buttonDisable = false;
+      });
     },
 
     handleCancel() {

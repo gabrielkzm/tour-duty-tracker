@@ -24,6 +24,8 @@
                   <v-btn small color="#151c55" dark class="mb-2" v-on="on">Add Tour</v-btn>
                 </template>
                 <TourForm
+                  :buttonDisable="buttonDisable"
+                  :ambassadors="createAmbassadorsList"
                   :tour="editedItem"
                   :onCancel="close"
                   :onSubmit="save"
@@ -67,6 +69,7 @@
               </v-dialog>
               <v-dialog v-model="assignDialog" max-width="700px">
                 <AssignForm
+                  :buttonDisable="buttonDisable"
                   :ambassadors="ambassadors"
                   :onCancel="close"
                   :tour="viewItem"
@@ -249,6 +252,7 @@ export default {
     assignDialog: false,
     assignmentDialog: false,
     replyDialog: false,
+    createAmbassadorsList: [],
     headers: [
       {
         text: "Name",
@@ -265,90 +269,90 @@ export default {
     tours: [],
     editedItem: {
       tourID: 0,
-      name: "",
+      name: null,
       date: null,
       startTime: null,
       endTime: null,
-      type: "",
+      type: "TOUR",
       numberOfGuests: null,
       numberOfAmbassadorsRequired: null,
       ambassadorsAccepted: [],
       ambassadorsDeclinedWithReason: [],
       ambassadorsDeclinedWithoutReason: [],
-      assignedAmbassadors: [],
-      ambassadorIC: "",
-      attire: "",
-      purposeOfTour: [],
-      guestProfile: "",
-      checkPoints: [],
-      startPoint: "",
-      endPoint: "",
-      remarks: "",
-      office: "",
-      officePhoneContact: "",
-      officeEmailContact: "",
-      officeLiaison: "",
-      status: "",
-      urgentTour: "",
-      requireMandarin: "",
+      assignedAmbassadors: ['000000000000000000000000'],
+      ambassadorIC: "000000000000000000000000",
+      attire: null,
+      purposeOfTour: null,
+      guestProfile: null,
+      checkPoints: null,
+      startPoint: null,
+      endPoint: null,
+      remarks: null,
+      office: null,
+      officePhoneContact: null,
+      officeEmailContact: null,
+      officeLiaison: null,
+      status: "Initiated",
+      urgentTour: false,
+      requireMandarin: false,
     },
     defaultItem: {
       tourID: 0,
-      name: "",
+      name: null,
       date: null,
       startTime: null,
       endTime: null,
-      type: "",
+      type: "TOUR",
       numberOfGuests: null,
       numberOfAmbassadorsRequired: null,
       ambassadorsAccepted: [],
       ambassadorsDeclinedWithReason: [],
       ambassadorsDeclinedWithoutReason: [],
-      assignedAmbassadors: [],
-      ambassadorIC: "",
-      attire: "",
-      purposeOfTour: [],
-      guestProfile: "",
-      checkPoints: [],
-      startPoint: "",
-      endPoint: "",
-      remarks: "",
-      office: "",
-      officePhoneContact: "",
-      officeEmailContact: "",
-      officeLiaison: "",
-      status: "",
-      urgentTour: "",
-      requireMandarin: "",
+      assignedAmbassadors: ['000000000000000000000000'],
+      ambassadorIC: "000000000000000000000000",
+      attire: null,
+      purposeOfTour: null,
+      guestProfile: null,
+      checkPoints: null,
+      startPoint: null,
+      endPoint: null,
+      remarks: null,
+      office: null,
+      officePhoneContact: null,
+      officeEmailContact: null,
+      officeLiaison: null,
+      status: "Initiated",
+      urgentTour: false,
+      requireMandarin: false,
     },
     viewItem: {
       tourID: 0,
-      name: "",
+      name: null,
       date: null,
       startTime: null,
       endTime: null,
-      type: "",
+      type: "TOUR",
       numberOfGuests: null,
       numberOfAmbassadorsRequired: null,
       ambassadorsAccepted: [],
       ambassadorsDeclinedWithReason: [],
       ambassadorsDeclinedWithoutReason: [],
-      assignedAmbassadors: [],
-      ambassadorIC: "",
-      attire: "",
-      purposeOfTour: [],
-      guestProfile: "",
-      checkPoints: [],
-      startPoint: "",
-      endPoint: "",
-      remarks: "",
-      office: "",
-      officePhoneContact: "",
-      officeEmailContact: "",
-      officeLiaison: "",
-      status: "",
-      urgentTour: "",
-      requireMandarin: ""
+      assignedAmbassadors: ['000000000000000000000000'],
+      ambassadorIC: "000000000000000000000000",
+      attire: null,
+      purposeOfTour: null,
+      guestProfile: null,
+      checkPoints: null,
+      startPoint: null,
+      endPoint: null,
+      remarks: null,
+      office: null,
+      officePhoneContact: null,
+      officeEmailContact: null,
+      officeLiaison: null,
+      status: "Initiated",
+      urgentTour: false,
+      requireMandarin: false,
     }
   }),
 
@@ -409,8 +413,10 @@ export default {
           response.data.ambassadors.forEach(ambassador => {
             this.ambassadors[ambassador._id] = {"name": ambassador.name, 
               "currentAvailability": ambassador.currentAvailability, "email": ambassador.email}
+            this.createAmbassadorsList.push({"text": ambassador.name, "value": ambassador._id})
           });
           this.ambassadors["000000000000000000000000"] = {"name": "N/A", "currentAvailability": false, '"email"': "asdasd"}
+          this.createAmbassadorsList.push({"text": 'N/A', "value": '000000000000000000000000'})
 
           this.$http.get('settings')
             .then(response => {
@@ -659,6 +665,7 @@ export default {
     },
 
     assignAmbassadorsAutomatically() {
+      this.buttonDisable = true;
       let viewItem = this.viewItem;
       let tours = this.tours;
       let endPointBody = {
@@ -681,6 +688,7 @@ export default {
             console.log(error);
           })
         .then(() => {
+          this.buttonDisable = false;
           this.close();
         });
     },
@@ -695,6 +703,7 @@ export default {
     },
 
     assignAmbassadorsManually(selectedAmbassadors) {
+      this.buttonDisable = true;
       let viewItem = this.viewItem;
       let tours = this.tours;
       let endPointBody = {
@@ -718,6 +727,7 @@ export default {
             console.log(error);
           })
         .then(() => {
+          this.buttonDisable = false;
           this.close();
         });
       
@@ -736,6 +746,7 @@ export default {
     },
 
     deleteTour() {
+      this.buttonDisable = true;
       this.$http
         .delete(`tours/${this.viewItem.tourID}`)
         .then(response => {
@@ -750,6 +761,7 @@ export default {
           console.log(error);
         })
         .then(() => {
+          this.buttonDisable = false;
           this.snackbarDelete = false;
           this.close();
         });
@@ -789,6 +801,7 @@ export default {
     },
 
     save() {
+      this.buttonDisable = true;
       let editedItem = this.editedItem;
       let tours = this.tours;
       if (editedItem.tourID !== 0) {
@@ -806,6 +819,7 @@ export default {
             console.log(error);
           })
           .then( () => {
+            this.buttonDisable = false;
             this.close();
           });
       } else {
@@ -822,6 +836,7 @@ export default {
             console.log(error);
           })
           .then( () => {
+            this.buttonDisable = false;
             this.close();
           });
       }

@@ -26,7 +26,7 @@
             </v-row>
             <v-divider />
             <v-card-text>
-              <v-form>
+              <v-form ref="changePasswordForm" v-model="validated">
                 <v-row dense>
                   <v-col cols="12">
                     <v-text-field
@@ -38,6 +38,7 @@
                       dense
                       color="#151c55"
                       v-model="user.password"
+                      :rules="[required('Current password')]"
                     ></v-text-field>
                   </v-col>
                 </v-row>
@@ -52,6 +53,7 @@
                       dense
                       color="#151c55"
                       v-model="user.newPassword"
+                      :rules="[required('New password'), validPassword()]"
                     ></v-text-field>
                   </v-col>
                 </v-row>
@@ -66,6 +68,7 @@
                       dense
                       color="#151c55"
                       v-model="user.confirmNewPassword"
+                      :rules="[required('Confirm new password'), v => v === user.newPassword || 'Password must match.']"
                     ></v-text-field>
                   </v-col>
                 </v-row>
@@ -80,10 +83,11 @@
                       dense
                       color="#151c55"
                       v-model="user.pin"
+                      :rules="[required('PIN')]"
                     ></v-text-field>
                   </v-col>
                 </v-row>
-                <v-btn color="#151c55" small dark class="ma-1" @click="handleSubmit">
+                <v-btn :disabled="buttonDisable" color="#151c55" small class="ma-1 white--text" @click="handleSubmit">
                   <v-icon class="mr-1" small>mdi-check-circle</v-icon>Confirm
                 </v-btn>
                 <v-btn color="error" small dark class="ma-1" @click="handleCancel">
@@ -102,6 +106,7 @@
 
 <script>
 import NavBar from "@/components/NavBar";
+import validations from '@/helpers/validations';
 
 export default {
   name: "ChangePassword",
@@ -112,6 +117,10 @@ export default {
 
   data() {
     return {
+      buttonDisable: false,
+      validated: true,
+      required: validations.required,
+      validPassword: validations.validPassword,
       snackbarSuccess: false,
       snackbarFail: false,
       snackbarText: '',
@@ -136,16 +145,23 @@ export default {
   methods: {
     handleCancel(){
       this.user = Object.assign({}, this.defaultUser);
+      this.$refs.changePasswordForm.reset()
       this.snackbarText = 'Your entry has been cleared';
       this.snackbarFail = true;
     },
 
     handleSubmit(e){
+      this.buttonDisable = true;
       e.preventDefault();
+      if(!this.$refs.changePasswordForm.validate()){
+        return
+      }
+
       this.$http.put('users/changePassword', this.user)
         .then(response => {
           this.snackbarText = response.data.message;
           this.snackbarSuccess = true;
+          this.$refs.changePasswordForm.reset()
           this.user = Object.assign({}, this.defaultUser);
         })
         .catch(error => {
@@ -157,8 +173,9 @@ export default {
           this.snackbarFail = true;
           console.log(error);
         })
-      
-    
+        .then( () => {
+          this.buttonDisable = false;
+        });
     }
   }
 };

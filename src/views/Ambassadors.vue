@@ -24,6 +24,7 @@
                   <v-btn small color="#151c55" dark class="mb-2" v-on="on">Add Ambassador</v-btn>
                 </template>
                 <AmbassadorForm
+                  :buttonDisable="buttonDisable"
                   :ambassador="editedItem"
                   :onCancel="close"
                   :onSubmit="save"
@@ -143,6 +144,7 @@ export default {
   },
 
   data: () => ({
+    buttonDisable: false,
     index: null,
     loading: "#151c55",
     loadingText: "Loading items...",
@@ -173,67 +175,67 @@ export default {
     ambassadors: [],
     editedItem: {
       ambassadorID: 0,
-      name: "",
+      name: null,
       batch: null,
       year: null,
-      primaryDegree: "",
-      secondaryDegree: "",
-      nationality: "",
-      race: "",
-      gender: "",
-      currentAvailability: "",
-      unavailabilityReason: "",
+      primaryDegree: null,
+      secondaryDegree: "N/A",
+      nationality: null,
+      race: null,
+      gender: null,
+      currentAvailability: null,
+      unavailabilityReason: "N/A",
       unavailabilityFrom: new Date().toISOString().substr(0, 10),
       unavailabilityTo: new Date().toISOString().substr(0, 10),
-      mandarinProficiency: "",
-      leadershipStatus: "",
-      hasGraduated: "",
+      mandarinProficiency: null,
+      leadershipStatus: null,
+      hasGraduated: null,
       contact: null,
-      email: "",
+      email: null,
       tourCount: {},
       eventCount: {}
     },
     defaultItem: {
       ambassadorID: 0,
-      name: "",
+      name: null,
       batch: null,
       year: null,
-      primaryDegree: "",
-      secondaryDegree: "",
-      nationality: "",
-      race: "",
-      gender: "",
-      currentAvailability: "",
-      unavailabilityReason: "",
+      primaryDegree: null,
+      secondaryDegree: "N/A",
+      nationality: null,
+      race: null,
+      gender: null,
+      currentAvailability: null,
+      unavailabilityReason: "N/A",
       unavailabilityFrom: new Date().toISOString().substr(0, 10),
       unavailabilityTo: new Date().toISOString().substr(0, 10),
-      mandarinProficiency: "",
-      leadershipStatus: "",
-      hasGraduated: "",
+      mandarinProficiency: null,
+      leadershipStatus: null,
+      hasGraduated: null,
       contact: null,
-      email: "",
+      email: null,
       tourCount: {},
       eventCount: {}
     },
     viewItem: {
       ambassadorID: 0,
-      name: "",
+      name: null,
       batch: null,
       year: null,
-      primaryDegree: "",
-      secondaryDegree: "",
-      nationality: "",
-      race: "",
-      gender: "",
-      currentAvailability: "",
-      unavailabilityReason: "",
+      primaryDegree: null,
+      secondaryDegree: null,
+      nationality: null,
+      race: null,
+      gender: null,
+      currentAvailability: null,
+      unavailabilityReason: null,
       unavailabilityFrom: new Date().toISOString().substr(0, 10),
       unavailabilityTo: new Date().toISOString().substr(0, 10),
-      mandarinProficiency: "",
-      leadershipStatus: "",
-      hasGraduated: "",
+      mandarinProficiency: null,
+      leadershipStatus: null,
+      hasGraduated: null,
       contact: null,
-      email: "",
+      email: null,
       tourCount: {},
       eventCount: {}
     }
@@ -317,6 +319,7 @@ export default {
     },
 
     deleteAmbassador() {
+      this.buttonDisable = true;
       this.$http
         .delete(`ambassadors/${this.viewItem.ambassadorID}`)
         .then(response => {
@@ -332,6 +335,7 @@ export default {
         })
         .then(() => {
           this.snackbarDelete = false;
+          this.buttonDisable = false;
           this.close();
         });
     },
@@ -360,6 +364,7 @@ export default {
     },
 
     save() {
+      this.buttonDisable = true;
       let editedItem = this.editedItem;
       let ambassadors = this.ambassadors;
       if (editedItem.ambassadorID !== 0) {
@@ -379,6 +384,7 @@ export default {
             console.log(error);
           })
           .then(() => {
+            this.buttonDisable = false;
             this.close();
           });
       } else {
@@ -399,6 +405,7 @@ export default {
             console.log(error);
           })
           .then(() => {
+            this.buttonDisable = false;
             this.close();
           });
       }

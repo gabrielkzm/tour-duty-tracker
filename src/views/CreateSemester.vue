@@ -2,7 +2,7 @@
   <v-container class="fill-height" fluid>
     <v-row align="center" justify="center">
       <v-col cols="12" sm="8" md="4">
-        <SemesterForm :semester="semester" :formTitle="title" :onCancel="handleCancel" :onSubmit="handleSubmit"/>
+        <SemesterForm :semester="semester" :formTitle="title" :onCancel="handleCancel" :onSubmit="handleSubmit" :buttonDisable="buttonDisable"/>
       </v-col>
     </v-row>
     <v-snackbar color="success" :timeout="timeout" top v-model="snackbarSuccess">{{snackbarText}}<v-btn dark text @click='snackbarSuccess=false'>Close</v-btn></v-snackbar>
@@ -22,6 +22,7 @@ export default {
 
   data() {
     return {
+      buttonDisable: false,
       snackbarSuccess: false,
       snackbarFail: false,
       snackbarText: '',
@@ -49,8 +50,8 @@ export default {
       this.snackbarFail = true;
     },
 
-    handleSubmit(e){
-      e.preventDefault();
+    handleSubmit(){
+      this.buttonDisable = true;
       this.$http.post('semesters', this.semester)
       .then(response => {
         this.snackbarText = response.data.message;
@@ -62,6 +63,9 @@ export default {
         this.snackbarFail = true;
         console.log(error);
       })
+      .then( () => {
+        this.buttonDisable = false;
+      });
     },
   }
 };

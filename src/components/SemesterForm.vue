@@ -5,7 +5,7 @@
           </div>
           <v-divider />
           <v-card-text class="mt-2">
-            <v-form>
+            <v-form ref="semesterForm" v-model="validated">
               <v-row dense>
                 <v-col cols="12">
                   <input type="hidden" v-model="semester.id" />
@@ -24,8 +24,10 @@
                         name="startDate"
                         required
                         v-on="on"
+                        readonly
                         dense
                         color="#151c55"
+                        :rules="[required('Start date')]"
                       ></v-text-field>
                     </template>
                     <v-date-picker
@@ -55,8 +57,10 @@
                         prepend-icon="mdi-calendar-arrow-right"
                         name="endDate"
                         required
+                        
                         v-on="on"
                         dense
+                        :rules="[required('End date'), v => new Date(v) >= new Date(semester.startDate) || 'End date must be greater or equal to start date.']"
                         color="#151c55"
                       ></v-text-field>
                     </template>
@@ -71,7 +75,8 @@
                   </v-menu>
                 </v-col>
               </v-row>
-              <v-btn color="#151c55" small dark class="ma-1" @click="onSubmit">
+              <v-btn :disabled="buttonDisable" color="#151c55" small class="ma-1 white--text"
+                @click="() => { if(!this.$refs.semesterForm.validate()) return; onSubmit() }">
                 <v-icon class="mr-1" small>mdi-pencil-plus</v-icon>Confirm
               </v-btn>
               <v-btn color="error" small dark class="ma-1" @click="onCancel">
@@ -83,6 +88,8 @@
 </template>
 
 <script>
+import validations from '@/helpers/validations';
+
 export default {
   name: "SemesterForm",
 
@@ -91,12 +98,15 @@ export default {
     formTitle: String,
     onCancel: Function,
     onSubmit: Function,
+    buttonDisable: Boolean,
   },
 
   data() {
     return {
+      validated: true,
       menu: false,
       menuTwo: false,
+      required: validations.required,
     };
   }
 };

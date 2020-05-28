@@ -3,6 +3,7 @@
     <v-row align="center" justify="center">
       <v-col cols="12">
         <AmbassadorForm
+          :buttonDisable="buttonDisable"
           :formTitle="formTitle"
           :ambassador="ambassador"
           :onCancel="handleCancel"
@@ -27,6 +28,7 @@ export default {
 
   data() {
     return {
+      buttonDisable: false,
       snackbarSuccess: false,
       snackbarFail: false,
       snackbarText: "",
@@ -38,12 +40,12 @@ export default {
         batch: null,
         year: null,
         primaryDegree: null,
-        secondaryDegree: null,
+        secondaryDegree: 'N/A',
         nationality: null,
         race: null,
         gender: null,
         currentAvailability: null,
-        unavailabilityReason: null,
+        unavailabilityReason: 'N/A',
         unavailabilityFrom: new Date().toISOString().substr(0, 10),
         unavailabilityTo: new Date().toISOString().substr(0, 10),
         mandarinProficiency: null,
@@ -61,12 +63,12 @@ export default {
         batch: null,
         year: null,
         primaryDegree: null,
-        secondaryDegree: null,
+        secondaryDegree: 'N/A',
         nationality: null,
         race: null,
         gender: null,
         currentAvailability: null,
-        unavailabilityReason: null,
+        unavailabilityReason: 'N/A',
         unavailabilityFrom: new Date().toISOString().substr(0, 10),
         unavailabilityTo: new Date().toISOString().substr(0, 10),
         mandarinProficiency: null,
@@ -89,8 +91,8 @@ export default {
       this.snackbarFail = true;
     },
 
-    handleSubmit(e) {
-      e.preventDefault();
+    handleSubmit() {
+      this.buttonDisable = true;
       this.$http.post('ambassadors', this.ambassador)
       .then(response => {
         this.snackbarText = response.data.message;
@@ -102,6 +104,9 @@ export default {
         this.snackbarFail = true;
         console.log(error);
       })
+      .then( () => {
+        this.buttonDisable = false;
+      });
     }
   }
 };

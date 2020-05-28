@@ -12,7 +12,7 @@
             transition="scale-transition"
             width="40"
           /></router-link>
-          <router-link to="/tours" tag="span" style="cursor:pointer"><h3 class="subtitle-1 font-weight-medium">OPHELIA</h3></router-link>
+          <router-link to="/tours" tag="span" style="cursor:pointer"><h3 class="subtitle-1 font-weight-medium">IRA</h3></router-link>
         </div>
         <v-spacer></v-spacer>
         <v-menu offset-y v-if="hasUserOptions">

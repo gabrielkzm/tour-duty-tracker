@@ -99,13 +99,13 @@ export default {
       pin: null,
       declineReason: null,
       ambassadors: null,
-      declineReasons: ['Class', 'Appointment', 'Meeting', 'Overseas', 'Emergency', 'I am a liar.']
+      declineReasons: ['Class', 'Appointment', 'Meeting', 'Overseas', 'Emergency']
     };
   },
 
   created() {
     this.$http
-      .get("ambassadors")
+      .get("ambassadors/names")
       .then(response => {
         let ambassadorObjs = response.data.ambassadors;
         this.ambassadors = ambassadorObjs.map(ambassador => {

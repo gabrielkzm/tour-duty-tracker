@@ -1,5 +1,10 @@
 <template>
   <v-container cols="12" fluid>
+    <v-row align="center" justify="center" fluid dense>
+      <v-col align="center" justify="center" fluid dense>
+          <span class="overline">Semester dates should not overlap, overlapping might cause errors.</span>
+      </v-col>
+    </v-row>
     <v-row v-if="semesterCard !== null">
       <BiteSizeCard title="Current Date Today" :value="today.toISOString().substr(0,10)" />
       <BiteSizeCard title="Current Semester ID" :value="semesterCard.semesterID" />
@@ -26,6 +31,7 @@
                   <v-btn small color="#151c55" dark class="mb-2" v-on="on">Add Semester</v-btn>
                 </template>
                 <SemesterForm
+                  :buttonDisable="buttonDisable"
                   :semester="editedItem"
                   :onCancel="close"
                   :onSubmit="save"
@@ -70,6 +76,7 @@ export default {
   },
 
   data: () => ({
+    buttonDisable: false,
     index: null,
     today: new Date(),
     semesterCard: null,
@@ -200,6 +207,7 @@ export default {
     },
 
     save() {
+      this.buttonDisable = true;
       let editedItem = this.editedItem;
       if (editedItem.semesterID !== 0) {
         this.$http
@@ -220,6 +228,7 @@ export default {
             console.log(error);
           })
           .then(()=> {
+            this.buttonDisable = false;
             this.close();
           })
       } else {
@@ -241,6 +250,7 @@ export default {
             console.log(error);
           })
           .then(() => {
+            this.buttonDisable = false;
             this.close();
           });
       }

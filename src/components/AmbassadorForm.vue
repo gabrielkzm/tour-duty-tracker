@@ -5,16 +5,17 @@
     </div>
     <v-divider />
     <v-card-text class="mt-2">
-      <v-form>
+      <v-form v-model="validated" ref="ambassadorForm">
         <v-row dense>
           <v-col cols="12" md="12">
             <input type="hidden" v-model="ambassador.ambassadorID" />
             <v-text-field
               v-model="ambassador.name"
-              label="Full Name"
+              label="Full name"
               prepend-icon="mdi-account-tie-outline"
               name="name"
               required
+              :rules="[required('Full name'), minLength('Full name', 5)]"
               dense
               color="#151c55"
             ></v-text-field>
@@ -27,7 +28,9 @@
               label="Phone contact"
               prepend-icon="mdi-phone-outline"
               name="contact"
+              :rules="[required('Phone contact'), validPhone('Phone contact', 8)]"
               required
+              type="number"
               dense
               color="#151c55"
             ></v-text-field>
@@ -38,6 +41,7 @@
               label="Email"
               prepend-icon="mdi-email-outline"
               name="email"
+              :rules="[required('Email'), validEmail('Email')]"
               required
               dense
               color="#151c55"
@@ -52,6 +56,7 @@
               prepend-icon="mdi-account-group-outline"
               name="batch"
               required
+              :rules="[required('Batch')]"
               dense
               color="#151c55"
               :items="batches"
@@ -63,6 +68,7 @@
               label="Year of study"
               prepend-icon="mdi-layers-outline"
               name="year"
+              :rules="[required('Year of study')]"
               required
               dense
               color="#151c55"
@@ -75,6 +81,7 @@
               label="Primary degree"
               prepend-icon="mdi-school-outline"
               name="primaryDegree"
+              :rules="[required('Primary degree')]"
               required
               dense
               color="#151c55"
@@ -87,6 +94,7 @@
               label="Secondary degree"
               prepend-icon="mdi-school-outline"
               name="secondaryDegree"
+              :rules="[requiredWithNA('Secondary degree'), v => v !== ambassador.primaryDegree || 'Secondary degree must not be the same as Primary degree, consider selecting N/A.']"
               required
               dense
               color="#151c55"
@@ -102,6 +110,7 @@
               prepend-icon="mdi-map-outline"
               name="nationality"
               required
+              :rules="[requiredWithOthers('Nationality')]"
               dense
               color="#151c55"
               :items="nationalities"
@@ -114,6 +123,7 @@
               prepend-icon="mdi-account-circle-outline"
               name="race"
               required
+              :rules="[requiredWithOthers('Race')]"
               dense
               color="#151c55"
               :items="races"
@@ -125,6 +135,7 @@
               label="Gender"
               prepend-icon="mdi-gender-male-female"
               name="gender"
+              :rules="[required('Gender')]"
               required
               dense
               color="#151c55"
@@ -137,6 +148,7 @@
               label="Current availability"
               prepend-icon="mdi-calendar-check-outline"
               name="currentAvailability"
+              :rules="[requiredBoolean('Current availability')]"
               required
               dense
               color="#151c55"
@@ -150,6 +162,7 @@
               v-model="ambassador.unavailabilityReason"
               label="Unavailablity reason"
               prepend-icon="mdi-calendar-remove-outline"
+              :rules="[requiredWithNA('Unavailability reason')]"
               name="unavailabilityReason"
               required
               dense
@@ -172,7 +185,9 @@
                   prepend-icon="mdi-calendar-month-outline"
                   name="unavailabilityFrom"
                   required
+                  readonly
                   v-on="on"
+                  :rules="[required('Unavailable from')]"
                   dense
                   color="#151c55"
                 ></v-text-field>
@@ -202,6 +217,8 @@
                   prepend-icon="mdi-calendar-month-outline"
                   name="unavailabilityTo"
                   required
+                  :rules="[required('Unavailable to'), v => new Date(v) >= new Date(ambassador.unavailabilityFrom) || 'Unavailable to - date must be greater or equal to Unavailable from - date.']"
+                  readonly
                   v-on="on"
                   dense
                   color="#151c55"
@@ -226,6 +243,7 @@
               prepend-icon="mdi-ideogram-cjk-variant"
               name="mandarinProficiency"
               required
+              :rules="[required('Mandarin proficiency')]"
               dense
               color="#151c55"
               :items="mandarinProficiency"
@@ -237,6 +255,7 @@
               label="Leadership status"
               prepend-icon="mdi-account-star-outline"
               name="leadershipStatus"
+              :rules="[requiredBoolean('Leadership status')]"
               required
               dense
               color="#151c55"
@@ -249,6 +268,7 @@
               label="Graduation status"
               prepend-icon="mdi-certificate-outline"
               name="graduationStatus"
+              :rules="[requiredBoolean('Graduation status')]"
               required
               dense
               color="#151c55"
@@ -256,7 +276,8 @@
             ></v-autocomplete>
           </v-col>
         </v-row>
-        <v-btn color="#151c55" small dark class="ma-1" @click="onSubmit">
+        <v-btn :disabled="buttonDisable" color="#151c55" small class="ma-1 white--text"
+          @click="() => { if(!this.$refs.ambassadorForm.validate()) return; onSubmit() }">
           <v-icon class="mr-1" small>mdi-pencil-plus</v-icon>Confirm
         </v-btn>
         <v-btn color="error" small dark class="ma-1" @click="onCancel">
@@ -268,6 +289,8 @@
 </template>
 
 <script>
+import validations from '@/helpers/validations';
+
 export default {
   name: "AmbassadorForm",
 
@@ -276,10 +299,19 @@ export default {
     formTitle: String,
     onCancel: Function,
     onSubmit: Function,
+    buttonDisable: Boolean,
   },
 
   data() {
     return {
+      validated: true,
+      required: validations.required,
+      minLength: validations.minLength,
+      validPhone: validations.validPhone,
+      validEmail: validations.validEmail,
+      requiredWithNA: validations.requiredWithNA,
+      requiredWithOthers: validations.requiredWithOthers,
+      requiredBoolean: validations.requiredBoolean,
       races: [
         'Chinese',
         'Malay',
@@ -290,23 +322,35 @@ export default {
       nationalities: [
         'Singaporean',
         'Malaysian',
+        'People Republic of China',
         'Indian',
-        'Chinese',
-        'Indonesian'
+        'Taiwanese',
+        'Indonesian',
+        'Korean',
+        'Thai',
+        'Vietnamese',
+        'Filipino',
+        'Cambodian',
+        'French',
+        'Italian',
+        'Others'
       ],
-      batches: [14,15,16,17,18,19],
+      batches: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30],
       years: [1,2,3,4,5],
       gender: ['M','F'],
       degrees: [
-        'LKSCB',
-        'SIS - CS',
-        'SIS - IS(IS)',
-        'SIS - IS(SMT)',
-        'SOE',
-        'SOSS - SOSS',
-        'SOSS - PLE',
-        'SOA',
-        'SOL',
+        'BAcc',
+        'BBM',
+        'BSc (Econ)',
+        'BSc (IS) - IS',
+        'BSc (IS) - SMT',
+        'BSc (CS)',
+        'BSc (CL)',
+        'LLB',
+        'BSocSc (PPS)',
+        'BSocSc (PLE)',
+        'BSocSc (ACM)',
+        'BSocSc (PPPM)',
         'N/A'
       ],
       availabilities: [
@@ -315,8 +359,8 @@ export default {
       ],
       unavailabilityReasons:[
         'N/A',
-        'LOA',
-        'Overseas Exchange',
+        'Leave of Absence',
+        'Overseas Exchange Programme',
         'Others',
       ],
       mandarinProficiency: ['Proficient', 'Average', 'Not Proficient'],
