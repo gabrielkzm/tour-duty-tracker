@@ -1,9 +1,10 @@
 const router = require('express').Router();
+const auth = require('../auth.js');
 let Tour = require('../models/tour.model');
 let Ambassador = require('../models/ambassador.model');
 
 // GET/ tours
-router.route('/').get((_, response) => {
+router.route('/').get(auth, (_, response) => {
     Tour.find()
         .then(tours => response.status(200).json({
             "code": "SUCCESS",
@@ -16,7 +17,7 @@ router.route('/').get((_, response) => {
 });
 
 // GET/ tours/1
-router.route('/:id').get((request, response) => {
+router.route('/:id').get(auth, (request, response) => {
     let id = request.params.id
     Tour.findById(id)
         .then(tours => response.status(200).json({
@@ -30,7 +31,7 @@ router.route('/:id').get((request, response) => {
 });
 
 // POST/ tours
-router.route('/').post((request, response) => {
+router.route('/').post(auth, (request, response) => {
     let name = request.body.name;
     let date = request.body.date;
     let startTime = date + 'T' + request.body.startTime + ':00Z';
@@ -100,7 +101,7 @@ router.route('/').post((request, response) => {
 });
 
 // PUT/ tours/1
-router.route('/:id').put((request, response) => {
+router.route('/:id').put(auth, (request, response) => {
     Tour.findById(request.params.id)
         .then(tour => {
             tour.name = request.body.name;
@@ -152,7 +153,7 @@ router.route('/:id').put((request, response) => {
 // PUT/ tours/replyTour/reject (public)
 router.route('/replyTour/reject').put(async (request, response) => {
     try{
-        const declineReasons = ['Class', 'Appointment', 'Meeting', 'Overseas', 'Emergency', 'I am a liar.'];
+        const declineReasons = ['Class', 'Appointment', 'Meeting', 'Overseas', 'Emergency'];
         const declineReason = request.body.declineReason
         const ambassadorName = request.body.name
         const pin = request.body.pin
@@ -272,7 +273,7 @@ router.route('/replyTour/accept').put(async (request, response) => {
 });
 
 // DELETE/ tours/1
-router.route('/:id').delete((request, response) => {
+router.route('/:id').delete(auth, (request, response) => {
     const id = request.params.id
     Tour.findByIdAndDelete(id)
         .then(() => response.status(200).json({

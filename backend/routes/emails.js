@@ -1,14 +1,15 @@
 const router = require('express').Router();
 const sendgrid = require('@sendgrid/mail');
+const auth = require('../auth.js');
 sendgrid.setApiKey(process.env.EMAIL_API_KEY);
 
 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
 // POST/ Email
-router.route('/').post(async (request, response) => {
+router.route('/').post(auth, async (request, response) => {
     const emailType = request.body.emailType;
     const ambassadorEmailRecipients = request.body.ambassadorEmailRecipients;
-    const officeEmailRecipients = request.body.officeEmailRecipients;
+    let officeEmailRecipients = request.body.officeEmailRecipients;
     const systemEmail = process.env.EMAIL_SENDER;
     const assignedAmbassadors = request.body.assignedAmbassadors;
     const ambassadorIC = request.body.ambassadorIC;

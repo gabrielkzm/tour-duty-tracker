@@ -1,8 +1,9 @@
 const router = require('express').Router();
+const auth = require('../auth.js');
 let Ambassador = require('../models/ambassador.model');
 
 // GET/ ambassadors
-router.route('/').get((request, response) => {
+router.route('/').get(auth, (request, response) => {
     let params = request.query.filter;
     let filters = {}
     let attributesToIgnore = '';
@@ -56,7 +57,7 @@ router.route('/names').get((_, response) => {
 
 
 // GET/ ambassadors/{id}
-router.route('/:id').get((request, response) => {
+router.route('/:id').get(auth, (request, response) => {
     Ambassador.findById(request.params.id)
         .then(ambassador => response.status(200).json({
             "code":"SUCCESS",
@@ -67,7 +68,7 @@ router.route('/:id').get((request, response) => {
 });
 
 // POST/ ambassadors
-router.route('/').post((request, response) => {
+router.route('/').post(auth, (request, response) => {
     //TODO: to confirm details to take note
     const name = request.body.name;
     const primaryDegree = request.body.primaryDegree;
@@ -122,7 +123,7 @@ router.route('/').post((request, response) => {
 });
 
 // PUT/ ambassadors
-router.route('/:id').put((request, response) => {
+router.route('/:id').put(auth, (request, response) => {
     Ambassador.findById(request.params.id)
         .then(ambassador => {
             ambassador.name = request.body.name;
@@ -160,7 +161,7 @@ router.route('/:id').put((request, response) => {
 });
 
 // DELETE/ ambassadors
-router.route('/:id').delete((request, response) => {
+router.route('/:id').delete(auth, (request, response) => {
     const id = request.params.id
     Ambassador.findByIdAndDelete(id)
         .then(() => response.status(200).json({

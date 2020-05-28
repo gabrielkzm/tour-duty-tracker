@@ -4,7 +4,7 @@ const auth = require('../auth.js');
 
 // POST/ users
 // Uncomment for creation of user
-router.route('/').post(async (request, response) => {
+router.route('/').post(auth, async (request, response) => {
     try{
         const user = new User(request.body)
         await user.save()

@@ -1,8 +1,10 @@
 const router = require('express').Router();
+const auth = require('../auth.js');
+
 let Settings = require('../models/settings.model');
 
 // GET/ settings
-router.route('/').get((_, response) => {
+router.route('/').get(auth, (_, response) => {
     Settings.find({}, '-__v -createdAt -updatedAt')
         .then(settings => response.status(200).json({
             "code":"SUCCESS",
@@ -14,7 +16,7 @@ router.route('/').get((_, response) => {
 
 
 // POST/ settings
-router.route('/').post((request, response) => {
+router.route('/').post(auth, (request, response) => {
     //TODO: to confirm details to take note
     const tourAssignerName = request.body.tourAssignerName;
     const tourAssignerContact = request.body.tourAssignerContact;
@@ -39,7 +41,7 @@ router.route('/').post((request, response) => {
 });
 
 // PUT/ settings
-router.route('/:id').put((request, response) => {
+router.route('/:id').put(auth, (request, response) => {
     Settings.findById(request.params.id)
         .then(settings => {
             settings.tourAssignerName = request.body.tourAssignerName;

@@ -1,11 +1,12 @@
 const router = require('express').Router();
+const auth = require('../auth.js');
 let Tour = require('../models/tour.model');
 let Semester = require('../models/semester.model');
 let Ambassador = require('../models/ambassador.model');
 
 // POST/ assignments
 // Include tabulation of scores
-router.route('/').post(async (request, response) => {
+router.route('/').post(auth, async (request, response) => {
     const assignAutomatically = request.body.assignAutomatically
     const tourID = request.body.tourID;
     const selectedAmbassadors = request.body.selectedAmbassadors;

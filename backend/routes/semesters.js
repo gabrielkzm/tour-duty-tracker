@@ -5,7 +5,7 @@ let Semester = require('../models/semester.model');
 //TODO: Put guards for all relevant backend endpoints
 
 // GET/ semesters
-router.route('/').get((_, response) => {
+router.route('/').get(auth, (_, response) => {
     Semester.find()
         .then(semesters => response.status(200).json({
             "code": "SUCCESS",
@@ -18,7 +18,7 @@ router.route('/').get((_, response) => {
 });
 
 // GET/ semesters/1
-router.route('/:id').get((request, response) => {
+router.route('/:id').get(auth, (request, response) => {
     let id = request.params.id
     Semester.findById(id)
         .then(semester => response.status(200).json({
@@ -55,7 +55,7 @@ router.route('/').post(auth, (request, response) => {
 });
 
 // PUT/ semesters/1
-router.route('/:id').put((request, response) => {
+router.route('/:id').put(auth, (request, response) => {
     Semester.findById(request.params.id)
         .then(semester => {
             const startDate = request.body.startDate;

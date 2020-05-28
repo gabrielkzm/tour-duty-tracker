@@ -1,9 +1,10 @@
 const router = require('express').Router();
+const auth = require('../auth.js');
 let Semester = require('../models/semester.model')
 let Tour = require('../models/tour.model')
 let Ambassador = require('../models/ambassador.model')
 // GET/ statistics
-router.route('/:date').get(async (request, response) => {
+router.route('/:date').get(auth, async (request, response) => {
     try{
         let statistics = {}
         
