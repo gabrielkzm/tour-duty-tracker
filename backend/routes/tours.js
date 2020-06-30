@@ -58,6 +58,7 @@ router.route('/').post(auth, (request, response) => {
     let status = request.body.status;
     let urgentTour = request.body.urgentTour;
     let requireMandarin = request.body.requireMandarin;
+    let announcedDate = null;
 
     const tour = new Tour({
         name,
@@ -86,6 +87,7 @@ router.route('/').post(auth, (request, response) => {
         status,
         urgentTour,
         requireMandarin,
+        announcedDate,
     });
 
     tour.save()
@@ -131,6 +133,7 @@ router.route('/:id').put(auth, (request, response) => {
             tour.status = request.body.status;
             tour.urgentTour = request.body.urgentTour;
             tour.requireMandarin = request.body.requireMandarin;
+            tour.announcedDate = request.body.announcedDate;
 
             tour.save()
                 .then(() => response.status(200).json({
@@ -153,7 +156,8 @@ router.route('/:id').put(auth, (request, response) => {
 // PUT/ tours/replyTour/reject (public)
 router.route('/replyTour/reject').put(async (request, response) => {
     try{
-        const declineReasons = ['Class', 'Appointment', 'Meeting', 'Overseas', 'Emergency'];
+        const declineReasons = ['Class', 'Appointment', 'Meeting', 'Overseas', 'Emergency', 'Upcoming LOA or Exchange', 'Unable to speak Mandarin (Applicable only for tour hosted in Mandarin)'];
+        const mandarinDeclineReason = 'Unable to speak Mandarin (Applicable only for tour hosted in Mandarin)';
         const declineReason = request.body.declineReason
         const ambassadorName = request.body.name
         const pin = request.body.pin
@@ -163,7 +167,7 @@ router.route('/replyTour/reject').put(async (request, response) => {
         
 
         if(!declineReasons.includes(declineReason)){
-            throw new Error('Nice try...')
+            throw new Error('No reason given for rejecting tour. Please select a valid reason for rejecting tour.')
         }
         
         if(!ambassador){
@@ -177,12 +181,11 @@ router.route('/replyTour/reject').put(async (request, response) => {
 
         Tour.findById(tourID)
             .then(tour => {
-                let index = tour.ambassadorsDeclinedWithoutReason.indexOf(ambassadorID)
-                if(index != -1){
-                    tour.ambassadorsDeclinedWithoutReason.splice(index, 1)
+                if(!tour.requireMandarin && declineReason === mandarinDeclineReason){
+                    throw new Error('Invalid reason given. This reason is only valid for tours hosted in Mandarin. Please select a valid reason for declining tour.')
                 }
 
-                index = tour.ambassadorsAccepted.indexOf(ambassadorID)
+                let index = tour.ambassadorsAccepted.indexOf(ambassadorID)
                 if(index != -1){
                     tour.ambassadorsAccepted.splice(index, 1)
                 }
@@ -224,7 +227,7 @@ router.route('/replyTour/accept').put(async (request, response) => {
         const ambassador = await Ambassador.findOne({name: ambassadorName})
         
         if(!ambassador){
-            throw new Error('Invalid ambassador name. Please contact Tours Portfolio Head/Executive');
+            throw new Error('Invalid ambassador name. Please contact Tours Portfolio Head/Executive.');
         }
         
         const ambassadorID = ambassador._id.toString()
@@ -235,12 +238,8 @@ router.route('/replyTour/accept').put(async (request, response) => {
 
         Tour.findById(tourID)
             .then(tour => {
-                let index = tour.ambassadorsDeclinedWithoutReason.indexOf(ambassadorID)
-                if(index != -1){
-                    tour.ambassadorsDeclinedWithoutReason.splice(index, 1)
-                }
 
-                index = tour.ambassadorsDeclinedWithReason.indexOf(ambassadorID)
+                let index = tour.ambassadorsDeclinedWithReason.indexOf(ambassadorID)
                 if(index != -1){
                     tour.ambassadorsDeclinedWithReason.splice(index, 1)
                 }

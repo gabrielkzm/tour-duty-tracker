@@ -52,7 +52,7 @@
               <v-row>
                 <span class="mr-2">{{item.name}}</span>
                 <v-icon small class="mr-2" @click="getDetails(item)">mdi-open-in-new</v-icon>
-                <div v-if="batches[0] === item.batch">
+                <div v-if="latestBatch === item.batch">
                   <v-icon small class="mr-2">mdi-baby-bottle</v-icon>
                 </div>
                 <div v-else>
@@ -171,7 +171,7 @@ export default {
       { text: "Leadership?", value: "leadershipStatus" },
       { text: "Actions", value: "actions", sortable: false }
     ],
-    batches: [14, 15, 16, 17, 18, 19],
+    latestBatch: 0,
     ambassadors: [],
     editedItem: {
       ambassadorID: 0,
@@ -263,17 +263,14 @@ export default {
     }
   },
 
-  created() {
-    this.batches.sort(function(a, b) {
-      return b - a;
-    });
-  },
-
   mounted() {
     this.$http
       .get("ambassadors?filter[hasGraduated]=false")
       .then(response => {
         this.ambassadors = response.data.ambassadors.map(ambassador => {
+          if(ambassador.batch > this.latestBatch){
+            this.latestBatch = ambassador.batch;
+          }
           return this.transformAmbassadorData(ambassador);
         });
         this.loading = false;

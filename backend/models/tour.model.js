@@ -30,7 +30,8 @@ const tourSchema = new Schema(
         officeLiaison: {type: String, required: true},
         status: {type: String, required: true},
         urgentTour: {type: Boolean, required: true},
-        requireMandarin: {type: Boolean, required: true}
+        requireMandarin: {type: Boolean, required: true},
+        announcedDate: {type: Date, required: false},
     },
     {
         timestamps: true

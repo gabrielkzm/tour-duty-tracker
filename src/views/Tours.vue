@@ -11,7 +11,7 @@
             itemsPerPageOptions: [10,20,30,40,50,-1]
           }"
           multi-sort
-          sort-by="name"
+          sort-by="status"
           class="elevation-12"
         >
           <template v-slot:top>
@@ -90,6 +90,14 @@
               </v-row>
             </v-container>
           </template>
+          <template v-slot:item.announcedDate="{ item }">
+            <v-container>
+              <v-row>
+                <span v-if="item.announcedDate" class="mr-2">{{item.announcedDate.substr(0,10)}}</span>
+                <span v-else class="mr-2">{{"N/A"}}</span>
+              </v-row>
+            </v-container>
+          </template>
           <template v-slot:item.assignedAmbassadors="{ item }">
             <div v-show="isAssigned(item)">
               <v-chip color="success" dark x-small class="mr-2" @click="getAssignmentDetails(item)">
@@ -103,7 +111,7 @@
             </div>
           </template>
           <template v-slot:item.status="{ item }">
-            <div v-show="item.status === 'Initiated'">
+            <div v-show="item.status === ' Initiated'">
               <v-chip
                 color="grey"
                 dark
@@ -166,13 +174,13 @@
             >mdi-email-send
             </v-icon>
             <v-icon
-              v-show="item.status === 'Announced' || item.status === 'Initiated' || item.status === 'Assigned'"
+              v-show="item.status === 'Announced' || item.status === ' Initiated' || item.status === 'Assigned'"
               small
               class="mr-2"
               @click="assignItem(item)"
             >mdi-clipboard-text</v-icon>
             <v-icon
-              v-show="item.status !== 'Announced' && item.status !== 'Initiated' && item.status !== 'Assigned'"
+              v-show="item.status !== 'Announced' && item.status !== ' Initiated' && item.status !== 'Assigned'"
               disabled
               small
               class="mr-2"
@@ -259,6 +267,7 @@ export default {
         align: "start",
         value: "name"
       },
+      {text: "Announced On", value: "announcedDate"},
       { text: "Date", value: "date" },
       { text: "Start Time", value: "startTime" },
       { text: "End Time", value: "endTime" },
@@ -271,6 +280,7 @@ export default {
       tourID: 0,
       name: null,
       date: null,
+      announcedDate: null,
       startTime: null,
       endTime: null,
       type: "TOUR",
@@ -292,7 +302,7 @@ export default {
       officePhoneContact: null,
       officeEmailContact: null,
       officeLiaison: null,
-      status: "Initiated",
+      status: " Initiated",
       urgentTour: false,
       requireMandarin: false,
     },
@@ -300,6 +310,7 @@ export default {
       tourID: 0,
       name: null,
       date: null,
+      announcedDate: null,
       startTime: null,
       endTime: null,
       type: "TOUR",
@@ -321,7 +332,7 @@ export default {
       officePhoneContact: null,
       officeEmailContact: null,
       officeLiaison: null,
-      status: "Initiated",
+      status: " Initiated",
       urgentTour: false,
       requireMandarin: false,
     },
@@ -329,6 +340,7 @@ export default {
       tourID: 0,
       name: null,
       date: null,
+      announcedDate: null,
       startTime: null,
       endTime: null,
       type: "TOUR",
@@ -350,7 +362,7 @@ export default {
       officePhoneContact: null,
       officeEmailContact: null,
       officeLiaison: null,
-      status: "Initiated",
+      status: " Initiated",
       urgentTour: false,
       requireMandarin: false,
     }
@@ -470,6 +482,7 @@ export default {
       tour["date"] = tour.date.substr(0, 10);
       tour["startTime"] = tour.startTime.substr(11, 5);
       tour["endTime"] = tour.endTime.substr(11, 5);
+     
       return tour;
     },
 
@@ -525,7 +538,6 @@ export default {
           .then(response => {
             tour.status = "Confirmed";
             let message = response.data.message;
-            //
             this.snackbarText = message
             this.snackbarSuccess = true;
             
@@ -597,6 +609,7 @@ export default {
       this.$http.post('emails', requestBody)
           .then(response => {
             tour.status = "Announced";
+            tour.announcedDate = this.today.toISOString().substr(0, 10);
             let message = response.data.message;
             this.snackbarText = message
             this.snackbarSuccess = true;

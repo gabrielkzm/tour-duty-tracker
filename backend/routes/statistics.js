@@ -215,28 +215,30 @@ router.route('/:date').get(auth, async (request, response) => {
         })
 
         tours.map(tour => {
-            tour.assignedAmbassadors.forEach((id, _) => {
-                if(tourEvaluations[id] == null){
-                    return
-                }else{
-                    if(tour["type"] === "TOUR"){
-                        tourEvaluations[id]['toursConducted'].push(tour["name"])
+            if(tour.status === 'Confirmed'){
+                tour.assignedAmbassadors.forEach((id, _) => {
+                    if(tourEvaluations[id] == null){
+                        return
                     }else{
-                        const endTime = new Date(tour.endTime);
-                        const startTime = new Date(tour.startTime);
-                        const hours = (endTime.getMinutes() - startTime.getMinutes()) / 60
-                        tourEvaluations[id]['UEHours'] = tourEvaluations[id]['UEHours'] + hours
+                        if(tour["type"] === "TOUR"){
+                            tourEvaluations[id]['toursConducted'].push(tour["name"])
+                        }else{
+                            const endTime = new Date(tour.endTime);
+                            const startTime = new Date(tour.startTime);
+                            const hours = (endTime.getMinutes() - startTime.getMinutes()) / 60
+                            tourEvaluations[id]['UEHours'] = tourEvaluations[id]['UEHours'] + hours
+                        }
                     }
-                }
-            })
+                })
 
-            tour.ambassadorsDeclinedWithoutReason.forEach((id, _) => {
-                if(tourEvaluations[id] == null){
-                    return
-                }else{
-                    tourEvaluations[id]['tourDeductions'].push(tour["name"])
-                }
-            })
+                tour.ambassadorsDeclinedWithoutReason.forEach((id, _) => {
+                    if(tourEvaluations[id] == null){
+                        return
+                    }else if(!tourEvaluations[id]['toursConducted'].includes(tour['name'])){
+                        tourEvaluations[id]['tourDeductions'].push(tour["name"])
+                    }
+                })
+            }
         })
 
         tourEvaluations = tabulatePoints(tourEvaluations)

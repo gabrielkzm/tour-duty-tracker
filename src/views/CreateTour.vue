@@ -80,7 +80,7 @@ export default {
         officePhoneContact: null,
         officeEmailContact: null,
         officeLiaison: null,
-        status: "Initiated",
+        status: " Initiated",
         urgentTour: false,
         requireMandarin: false,
       },

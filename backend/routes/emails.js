@@ -18,7 +18,8 @@ router.route('/').post(auth, async (request, response) => {
     const senderEmail = request.body.senderEmail;
     const tour = request.body.tour;
     const responseURL = request.body.responseURL;
-
+    const urgentTour = tour.urgentTour;
+    const requireMandarin = tour.requireMandarin;
     let tourDate = new Date(tour.date)
     let tourDateString = tourDate.toDateString()
     let tourDateText = tourDateString.substr(tourDateString.indexOf(' ') + 1);
@@ -32,7 +33,15 @@ router.route('/').post(auth, async (request, response) => {
     //TODO: delete email model
     try {
         if (emailType === "initialEmail") {
-            const ambassadorTemplateID = process.env.EMAIL_INITIAL_AMBASSADORS_TID;
+            let ambassadorTemplateID = process.env.EMAIL_INITIAL_AMBASSADORS_TID;
+            
+            if(requireMandarin && urgentTour){
+                ambassadorTemplateID = process.env.EMAIL_INITIAL_AMBASSADORS_MANDARIN_URGENT_TID;
+            }else if(requireMandarin){
+                ambassadorTemplateID = process.env.EMAIL_INITIAL_AMBASSADORS_MANDARIN_TID;
+            }else if(urgentTour){
+                ambassadorTemplateID = process.env.EMAIL_INITIAL_AMBASSADORS_URGENT_TID;
+            }
         
             let messageToAmbassador = {
                 to: ambassadorEmailRecipients,
@@ -59,8 +68,11 @@ router.route('/').post(auth, async (request, response) => {
 
             await sendgrid.send(messageToAmbassador);
 
-            const officeTemplateID = process.env.EMAIL_INITIAL_OFFICE_TID
-            
+            let officeTemplateID = process.env.EMAIL_INITIAL_OFFICE_TID
+            if(urgentTour){
+                officeTemplateID = process.env.EMAIL_INITIAL_OFFICE_URGENT_TID
+            }
+
             let messageToOffice = {
                 to: officeEmailRecipients,
                 from: systemEmail,
@@ -96,6 +108,7 @@ router.route('/').post(auth, async (request, response) => {
             await sendgrid.send(messageToAmbassador)
         
             const officeTemplateID = process.env.EMAIL_CONFIRMATION_OFFICE_TID;
+            const remarks = tour.remarks ? tour.remarks : 'N/A';
             let messageToOffice = {
                 to: officeEmailRecipients,
                 from: systemEmail,
@@ -119,7 +132,8 @@ router.route('/').post(auth, async (request, response) => {
                     "endPoint": tour.endPoint,
                     "office": tour.office,
                     "officeEmailContact": tour.officeEmailContact,
-                    "officePhoneContact": tour.officePhoneContact
+                    "officePhoneContact": tour.officePhoneContact,
+                    "remarks": remarks,
                 }
             }
 

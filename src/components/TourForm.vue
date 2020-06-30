@@ -258,6 +258,7 @@
               dense
               color="#151c55"
               multiple
+              disabled
               :items="ambassadors"
             >
               <template v-slot:selection="{item, index}">
@@ -390,7 +391,7 @@ export default {
   data() {
     return {
       validated: true,
-      statuses: ["Initiated", "Announced", "Assigned", "Confirmed"],
+      statuses: [" Initiated", "Announced", "Assigned", "Confirmed"],
       required: validations.required,
       minLength: validations.minLength,
       requiredBoolean: validations.requiredBoolean,
@@ -468,6 +469,8 @@ export default {
         "Office of Safety & Security",
         "Office of SMU Executive Development",
         "Office of SMU Institutional Review Board",
+        "Office of Provost",
+        "Office of the President",
         "Others"
       ],
       date: new Date().toISOString().substr(0, 10),

@@ -99,7 +99,7 @@ export default {
       pin: null,
       declineReason: null,
       ambassadors: null,
-      declineReasons: ['Class', 'Appointment', 'Meeting', 'Overseas', 'Emergency']
+      declineReasons: ['Class', 'Appointment', 'Meeting', 'Overseas', 'Emergency', 'Upcoming LOA or Exchange', 'Unable to speak Mandarin (Applicable only for tour hosted in Mandarin']
     };
   },
 
