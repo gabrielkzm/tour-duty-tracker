@@ -760,7 +760,8 @@ export default {
 
     deleteTour() {
       this.buttonDisable = true;
-      this.$http
+      if(this.viewItem.status !== 'Confirmed' && this.viewItem.status !== 'Assigned'){
+        this.$http
         .delete(`tours/${this.viewItem.tourID}`)
         .then(response => {
           this.tours.splice(this.index, 1);
@@ -778,6 +779,13 @@ export default {
           this.snackbarDelete = false;
           this.close();
         });
+      }else{
+        this.snackbarText = "Only tours with status: Announced or Initiated can be deleted.";
+        this.snackbarFail = true;
+        this.buttonDisable = false;
+        this.snackbarDelete = false;
+        this.close();
+      }
     },
 
     getDetails(item) {
