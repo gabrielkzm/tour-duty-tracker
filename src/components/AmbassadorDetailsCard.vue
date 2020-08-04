@@ -21,8 +21,11 @@
             </v-col>
           </v-row>
           <v-row v-show="!unavailablityDetails">
-            <v-col md="12">
+            <v-col md="6">
               <span class="font-weight-bold"><v-icon small>mdi-phone</v-icon> Contact: </span>{{ambassador.contact}}
+            </v-col>
+            <v-col md="6">
+              <span class="font-weight-bold"><v-icon small>mdi-lock</v-icon> PIN: </span>{{ambassador.ambassadorID.slice(-4)}}
             </v-col>
           </v-row>
           <v-row v-show="!unavailablityDetails">

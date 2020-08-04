@@ -280,6 +280,7 @@
               :rules="[required('Ambassador IC')]"
               name="ambassadorIC"
               dense
+              disabled
               color="#151c55"
               :items="ambassadors"
             ></v-autocomplete>

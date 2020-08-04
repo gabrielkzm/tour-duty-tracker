@@ -215,30 +215,28 @@ router.route('/:date').get(auth, async (request, response) => {
         })
 
         tours.map(tour => {
-            if(tour.status === 'Confirmed'){
-                tour.assignedAmbassadors.forEach((id, _) => {
-                    if(tourEvaluations[id] == null){
-                        return
+            tour.assignedAmbassadors.forEach((id, _) => {
+                if(tourEvaluations[id] == null){
+                    return
+                }else{
+                    if(tour["type"] === "TOUR"){
+                        tourEvaluations[id]['toursConducted'].push(tour["name"])
                     }else{
-                        if(tour["type"] === "TOUR"){
-                            tourEvaluations[id]['toursConducted'].push(tour["name"])
-                        }else{
-                            const endTime = new Date(tour.endTime);
-                            const startTime = new Date(tour.startTime);
-                            const hours = (endTime.getMinutes() - startTime.getMinutes()) / 60
-                            tourEvaluations[id]['UEHours'] = tourEvaluations[id]['UEHours'] + hours
-                        }
+                        const endTime = new Date(tour.endTime);
+                        const startTime = new Date(tour.startTime);
+                        const hours = (endTime.getMinutes() - startTime.getMinutes()) / 60
+                        tourEvaluations[id]['UEHours'] = tourEvaluations[id]['UEHours'] + hours
                     }
-                })
+                }
+            })
 
-                tour.ambassadorsDeclinedWithoutReason.forEach((id, _) => {
-                    if(tourEvaluations[id] == null){
-                        return
-                    }else if(!tourEvaluations[id]['toursConducted'].includes(tour['name'])){
-                        tourEvaluations[id]['tourDeductions'].push(tour["name"])
-                    }
-                })
-            }
+            tour.ambassadorsDeclinedWithoutReason.forEach((id, _) => {
+                if(tourEvaluations[id] == null){
+                    return
+                }else if(!tourEvaluations[id]['toursConducted'].includes(tour['name'])){
+                    tourEvaluations[id]['tourDeductions'].push(tour["name"])
+                }
+            })
         })
 
         tourEvaluations = tabulatePoints(tourEvaluations)
@@ -262,9 +260,15 @@ router.route('/:date').get(auth, async (request, response) => {
 
 function tabulatePoints(tourEvaluations){
     for(const [key, ambassador] of Object.entries(tourEvaluations)){
+        // TODO: Re-evaluate based on tabulation logic
+        // let UECount = Math.floor(ambassador['UEHours']/2)/2
+        // let totalCount = UECount + ambassador['tourCount']
+        // if(totalCount >= 4.5){
         if(ambassador['tourCount'] >= 4){
             //TODO: Discrepancy for tour evaluation and ue hours, check with EXCO. (UE not factored in yet)
-            ambassador['tourPoints'] = Math.min(7.5, ambassador['tourCount'])
+            // let excess = ambassador['tourCount'] - 4.5
+            let excess = ambassador['tourCount'] - 4
+            ambassador['tourPoints'] = 5 + Math.min(2.5, excess)
         }else{
             ambassador['tourPoints'] = ambassador['tourCount']
         }

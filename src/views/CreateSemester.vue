@@ -52,7 +52,7 @@ export default {
 
     handleSubmit(){
       this.buttonDisable = true;
-      this.$http.post('semesters', this.semester)
+      this.$http.post('/api/semesters', this.semester)
       .then(response => {
         this.snackbarText = response.data.message;
         this.snackbarSuccess = true;

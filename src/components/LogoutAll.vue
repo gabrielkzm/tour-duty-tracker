@@ -32,7 +32,7 @@ export default {
 
   created:  function() {
     this.$http
-      .delete("users/logout/all")
+      .delete("/api/users/logout/all")
       // eslint-disable-next-line no-unused-vars
       .then(response => {
         localStorage.removeItem("user");

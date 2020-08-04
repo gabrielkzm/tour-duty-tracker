@@ -216,7 +216,7 @@
       <v-btn dark text @click="snackbarFail=false">Close</v-btn>
     </v-snackbar>
     <v-snackbar color="warning" timeout="5000" right v-model="snackbarDelete">
-      <span>Are you sure you want to delete this ambassador?</span>
+      <span>Are you sure you want to delete this tour?</span>
       <v-btn dark text @click="deleteTour">Delete</v-btn>
       <v-btn dark text @click="snackbarDelete=false">Close</v-btn>
     </v-snackbar>
@@ -419,7 +419,7 @@ export default {
   },
 
   created(){
-    this.$http.get('ambassadors?filter[hasGraduated]=false&filter[isMinimal]=true')
+    this.$http.get('/api/ambassadors?filter[hasGraduated]=false&filter[isMinimal]=true')
       .then(
         response => {
           response.data.ambassadors.forEach(ambassador => {
@@ -430,7 +430,7 @@ export default {
           this.ambassadors["000000000000000000000000"] = {"name": "N/A", "currentAvailability": false, '"email"': "asdasd"}
           this.createAmbassadorsList.push({"text": 'N/A', "value": '000000000000000000000000'})
 
-          this.$http.get('settings')
+          this.$http.get('/api/settings')
             .then(response => {
               let settingsTemp = response.data.settings[0];
               settingsTemp['settingsID'] = settingsTemp._id;
@@ -455,7 +455,7 @@ export default {
   
   mounted() {
     this.$http
-      .get("tours")
+      .get("/api/tours")
       .then(response => {
         this.tours = response.data.tours.map(tour => {
           return this.transformTourData(tour);
@@ -490,6 +490,7 @@ export default {
       this.buttonDisable = true;
       let tour = this.viewItem;
       let tours = this.tours;
+      let i = this.index;
       let ambassadors = this.ambassadors
 
       let senderEmail = this.settings.tourAssignerEmail;
@@ -534,18 +535,18 @@ export default {
         "responseURL": null
       }
       
-      this.$http.post('emails', requestBody)
+      this.$http.post('/api/emails', requestBody)
           .then(response => {
             tour.status = "Confirmed";
             let message = response.data.message;
             this.snackbarText = message
             this.snackbarSuccess = true;
             
-            this.$http.put(`tours/${tour.tourID}`, tour)
+            this.$http.put(`/api/tours/${tour.tourID}`, tour)
               .then(response => {
                 let tour = response.data.tour;
                 tour = this.transformTourData(tour);
-                Object.assign(tours[this.index], tour);
+                Object.assign(tours[i], tour);
                 this.snackbarText = message
                 this.snackbarSuccess = true;
               })
@@ -574,6 +575,7 @@ export default {
       this.buttonDisable = true;
       let tour = this.viewItem;
       let tours = this.tours;
+      let i = this.index;
       let ambassadors = this.ambassadors
       let senderEmail = this.settings.tourAssignerEmail
 
@@ -606,7 +608,7 @@ export default {
         "responseURL": responseURL
       }
 
-      this.$http.post('emails', requestBody)
+      this.$http.post('/api/emails', requestBody)
           .then(response => {
             tour.status = "Announced";
             tour.announcedDate = this.today.toISOString().substr(0, 10);
@@ -614,11 +616,11 @@ export default {
             this.snackbarText = message
             this.snackbarSuccess = true;
             
-            this.$http.put(`tours/${tour.tourID}`, tour)
+            this.$http.put(`/api/tours/${tour.tourID}`, tour)
               .then(response => {
                 let tour = response.data.tour;
                 tour = this.transformTourData(tour);
-                Object.assign(tours[this.index], tour);
+                Object.assign(tours[i], tour);
                 this.snackbarText = message
                 this.snackbarSuccess = true;
               })
@@ -687,7 +689,7 @@ export default {
         "ambassdorsHaveNotResponded": this.ambassadorsHaveNotResponded,
       }
 
-      this.$http.post(`assignments`, endPointBody)
+      this.$http.post(`/api/assignments`, endPointBody)
         .then(response => {
           let tour = response.data.tour
           tour = this.transformTourData(tour);
@@ -726,7 +728,7 @@ export default {
         "ambassdorsHaveNotResponded": this.ambassadorsHaveNotResponded,
       }
 
-      this.$http.post(`assignments`, endPointBody)
+      this.$http.post(`/api/assignments`, endPointBody)
         .then(response => {
           let tour = response.data.tour
           tour = this.transformTourData(tour);
@@ -762,7 +764,7 @@ export default {
       this.buttonDisable = true;
       if(this.viewItem.status !== 'Confirmed' && this.viewItem.status !== 'Assigned'){
         this.$http
-        .delete(`tours/${this.viewItem.tourID}`)
+        .delete(`/api/tours/${this.viewItem.tourID}`)
         .then(response => {
           this.tours.splice(this.index, 1);
           this.snackbarText = response.data.message;
@@ -826,7 +828,7 @@ export default {
       let editedItem = this.editedItem;
       let tours = this.tours;
       if (editedItem.tourID !== 0) {
-        this.$http.put(`tours/${editedItem.tourID}`, editedItem)
+        this.$http.put(`/api/tours/${editedItem.tourID}`, editedItem)
           .then(response => {
             let tour = response.data.tour;
             tour = this.transformTourData(tour);
@@ -844,7 +846,7 @@ export default {
             this.close();
           });
       } else {
-        this.$http.post('tours', editedItem)
+        this.$http.post('/api/tours', editedItem)
           .then(response => {
             let tour = this.transformTourData(response.data.tour);
             tours.push(tour);

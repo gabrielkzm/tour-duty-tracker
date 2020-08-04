@@ -134,7 +134,7 @@ export default {
   mounted() {
     const todayTime = this.today.getTime();
     this.$http
-      .get("semesters")
+      .get("/api/semesters")
       .then(response => {
         response.data.semesters.map(semester => {
           if (
@@ -179,7 +179,7 @@ export default {
 
     deleteSemester() {
       this.$http
-        .delete(`semesters/${this.viewItem.semesterID}`)
+        .delete(`/api/semesters/${this.viewItem.semesterID}`)
         .then(response => {
           this.snackbarText = response.data.message;
           this.snackbarSuccess = true;
@@ -211,7 +211,7 @@ export default {
       let editedItem = this.editedItem;
       if (editedItem.semesterID !== 0) {
         this.$http
-          .put(`semesters/${editedItem.semesterID}`, editedItem)
+          .put(`/api/semesters/${editedItem.semesterID}`, editedItem)
           .then(response => {
             Object.assign(this.semesters[this.index], {
               semesterID: response.data.semester._id,
@@ -233,7 +233,7 @@ export default {
           })
       } else {
         this.$http
-          .post("semesters", this.editedItem)
+          .post("/api/semesters", this.editedItem)
           .then(response => {
             this.semesters.push({
               semesterID: response.data.semester._id,

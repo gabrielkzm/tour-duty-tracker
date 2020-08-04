@@ -64,7 +64,7 @@ export default {
   },
 
   mounted(){
-    this.$http.get('ambassadors?filter[hasGraduated]=true')
+    this.$http.get('/api/ambassadors?filter[hasGraduated]=true')
       .then(response => {
         this.graduatedAmbassadors = response.data.ambassadors.map(ambassador => {
           return this.transformAmbassadorData(ambassador);
@@ -209,7 +209,7 @@ export default {
 
     deleteAmbassador(){
       this.buttonDisable = true;
-      this.$http.delete(`ambassadors/${this.viewItem.ambassadorID}`)
+      this.$http.delete(`/api/ambassadors/${this.viewItem.ambassadorID}`)
         .then(response => {
           this.snackbarText = response.data.message;
           this.snackbarSuccess = true;
@@ -240,7 +240,7 @@ export default {
       this.buttonDisable = true;
       let editedItem = this.editedItem;
       let graduatedAmbassadors = this.graduatedAmbassadors;
-      this.$http.put(`ambassadors/${editedItem.ambassadorID}`, editedItem)
+      this.$http.put(`/api/ambassadors/${editedItem.ambassadorID}`, editedItem)
         .then(response => {
           let ambassador = response.data.ambassador;
           ambassador = this.transformAmbassadorData(ambassador);

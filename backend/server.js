@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const path = require('path');
 
 require('dotenv').config();
 
@@ -33,6 +34,12 @@ app.use('/api/emails', emailsRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/semesters', semestersRouter);
 app.use('/api/settings', settingsRouter);
+
+// DEPLOYMENT ONLY
+// app.use(express.static(path.join(__dirname, '../dist')))
+// app.get('*', (req, res) => {
+//     res.sendFile(path.join(__dirname, '../dist/index.html'))
+// })
 
 app.listen(port, () =>{
     console.log('Server has been initiated and is running successfully.')

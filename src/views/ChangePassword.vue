@@ -157,7 +157,7 @@ export default {
         return
       }
 
-      this.$http.put('users/changePassword', this.user)
+      this.$http.put('/api/users/changePassword', this.user)
         .then(response => {
           this.snackbarText = response.data.message;
           this.snackbarSuccess = true;

@@ -93,7 +93,7 @@ export default {
 
     handleSubmit() {
       this.buttonDisable = true;
-      this.$http.post('ambassadors', this.ambassador)
+      this.$http.post('/api/ambassadors', this.ambassador)
       .then(response => {
         this.snackbarText = response.data.message;
         this.snackbarSuccess = true;

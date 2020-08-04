@@ -59,7 +59,7 @@ export default {
   methods:{
     handleSubmit(e){
       e.preventDefault();
-      this.$http.post('users/login', {
+      this.$http.post('/api/users/login', {
         username: this.username,
         password: this.password
       })

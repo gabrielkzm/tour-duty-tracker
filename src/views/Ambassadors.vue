@@ -265,7 +265,7 @@ export default {
 
   mounted() {
     this.$http
-      .get("ambassadors?filter[hasGraduated]=false")
+      .get("/api/ambassadors?filter[hasGraduated]=false")
       .then(response => {
         this.ambassadors = response.data.ambassadors.map(ambassador => {
           if(ambassador.batch > this.latestBatch){
@@ -318,7 +318,7 @@ export default {
     deleteAmbassador() {
       this.buttonDisable = true;
       this.$http
-        .delete(`ambassadors/${this.viewItem.ambassadorID}`)
+        .delete(`/api/ambassadors/${this.viewItem.ambassadorID}`)
         .then(response => {
           this.ambassadors.splice(this.index, 1);
           this.snackbarText = response.data.message;
@@ -366,7 +366,7 @@ export default {
       let ambassadors = this.ambassadors;
       if (editedItem.ambassadorID !== 0) {
         this.$http
-          .put(`ambassadors/${editedItem.ambassadorID}`, editedItem)
+          .put(`/api/ambassadors/${editedItem.ambassadorID}`, editedItem)
           .then(response => {
             let ambassador = response.data.ambassador;
             ambassador = this.transformAmbassadorData(ambassador);
@@ -386,7 +386,7 @@ export default {
           });
       } else {
         this.$http
-          .post("ambassadors", editedItem)
+          .post("/api/ambassadors", editedItem)
           .then(response => {
             let ambassador = this.transformAmbassadorData(
               response.data.ambassador

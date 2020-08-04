@@ -105,7 +105,7 @@ export default {
 
   created() {
     this.$http
-      .get("ambassadors/names")
+      .get("/api/ambassadors/names")
       .then(response => {
         let ambassadorObjs = response.data.ambassadors;
         this.ambassadors = ambassadorObjs.map(ambassador => {
@@ -134,7 +134,7 @@ export default {
       }
 
       this.$http
-        .put(`tours/replyTour/reject`, requestBody)
+        .put(`/api/tours/replyTour/reject`, requestBody)
         .then(response => {
           this.name = null;
           this.pin = null;
@@ -165,7 +165,7 @@ export default {
       }
 
       this.$http
-        .put(`tours/replyTour/accept`, requestBody)
+        .put(`/api/tours/replyTour/accept`, requestBody)
         .then(response => {
           this.name = null;
           this.pin = null;

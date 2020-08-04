@@ -242,7 +242,7 @@ export default {
   methods: {
     loadData(date) {
       this.$http
-        .get(`statistics/${date}`)
+        .get(`/api/statistics/${date}`)
         .then(response => {
           let statistics = response.data.statistics;
           this.period.semesterStartDate = statistics.startDate;

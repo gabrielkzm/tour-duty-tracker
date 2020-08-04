@@ -6,8 +6,9 @@ import axios from 'axios';
 //TODO: Check all console logs
 Vue.config.productionTip = false
 
+const baseURL = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : 'https://ira-dev.herokuapp.com'
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:5000/api/',
+  baseURL: baseURL,
 });
 
 axiosInstance.interceptors.request.use(

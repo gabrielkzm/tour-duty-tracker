@@ -195,7 +195,7 @@ export default {
 
   created() {
     this.$http
-      .get("settings")
+      .get("/api/settings")
       .then(response => {
         let settings = response.data.settings[0];
         this.currentSettings.tourAssignerID = settings._id;
@@ -229,7 +229,7 @@ export default {
       this.buttonDisable = true;
 
       this.$http
-      .put(`settings/${this.currentSettings.tourAssignerID}`, this.settings)
+      .put(`/api/settings/${this.currentSettings.tourAssignerID}`, this.settings)
       .then(response => {
         this.snackbarText = response.data.message;
         this.snackbarSuccess = true;

@@ -30,7 +30,7 @@ export default {
   },
 
   created(){
-    this.$http.get('ambassadors?filter[hasGraduated]=false&filter[isMinimal]=true')
+    this.$http.get('/api/ambassadors?filter[hasGraduated]=false&filter[isMinimal]=true')
       .then(
         response => {
           this.ambassadors = response.data.ambassadors.map(ambassador => {
@@ -125,7 +125,7 @@ export default {
 
     handleSubmit() {
       this.buttonDisable = true;
-      this.$http.post('tours', this.tour)
+      this.$http.post('/api/tours', this.tour)
       .then(response => {
         this.snackbarText = response.data.message;
         this.snackbarSuccess = true;
